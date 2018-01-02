@@ -1,11 +1,9 @@
 ---
 title: >-
-  Deal with nullables like they&#039;re not even here - Good coding practices in
+  Deal with nullables like they're not even here - Good coding practices in
   TypeScript.
 id: 270
 categories:
-  - nodejs
-  - software engineering
   - TypeScript
 date: 2017-08-01 15:05:10
 tags:

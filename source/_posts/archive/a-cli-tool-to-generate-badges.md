@@ -3,7 +3,6 @@ title: A cli tool to generate badges
 id: 17
 categories:
   - JavaScript
-  - nodejs
 date: 2014-11-02 11:28:17
 tags:
 ---

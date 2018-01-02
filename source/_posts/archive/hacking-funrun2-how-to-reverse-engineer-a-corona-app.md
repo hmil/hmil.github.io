@@ -1,15 +1,14 @@
 ---
 title: Hacking FunRun2 — how to reverse engineer a Corona app
 tags:
-  - cheat
   - funrun
   - funrun2
   - hack
   - reverse engineering
+  - android
 id: 164
 categories:
   - hacking
-  - mobile
 date: 2015-02-13 17:27:12
 ---
 

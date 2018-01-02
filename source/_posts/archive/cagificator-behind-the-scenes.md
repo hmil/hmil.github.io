@@ -2,7 +2,6 @@
 title: 'Cagificator: behind the scenes'
 id: 42
 categories:
-  - computer vision
   - hacking
 date: 2014-11-19 18:33:58
 tags:
