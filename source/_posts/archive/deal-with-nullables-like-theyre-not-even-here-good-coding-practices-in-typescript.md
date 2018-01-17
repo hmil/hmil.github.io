@@ -4,9 +4,10 @@ title: >-
   TypeScript.
 id: 270
 categories:
-  - TypeScript
+  - software engineering
 date: 2017-08-01 15:05:10
 tags:
+  - TypeScript
 ---
 
 Today we will take a look at a couple ways to improve your TypeScript code. By applying those techniques we will get code that is more readable, contains less bugs and is objectively higher-level without any downside. How cool is that ?

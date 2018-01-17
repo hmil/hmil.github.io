@@ -2,7 +2,7 @@
 title: 'SailsJS tutorial &#124; expenses tracking app (Part 2/4)'
 id: 67
 categories:
-  - JavaScript
+  - archived
 date: 2014-12-07 15:33:56
 tags:
 ---
