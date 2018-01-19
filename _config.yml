@@ -80,3 +80,6 @@ deploy:
   type: git
   repo: https://github.com/hmil/hmil.github.io.git
   branch: master
+
+# Comments
+disqus_shortname: hmil
