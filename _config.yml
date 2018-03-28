@@ -78,7 +78,7 @@ theme: custom
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: https://github.com/hmil/hmil.github.io.git
+  repo: git@github.com:hmil/hmil.github.io.git
   branch: master
 
 # Comments
