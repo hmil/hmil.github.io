@@ -9,20 +9,17 @@ categories:
   - software engineering
 ---
 
-**This tutorial is in beta, it may not be ready yet. Feel free to try it and give me feedback so I can release it asap :)**
-
-I've been experimenting with ways to structure a complex TypeScript project lately while working on [Vaultage](https://github.com/lbarman/vaultage) and I have finally found a solution that I like.
+I've been experimenting with ways to structure a complex TypeScript project lately while working on [Vaultage](https://github.com/lbarman/vaultage) and I have finally found a solution that provides proper isolation and consistency across packages.
 
 Java developers should be familiar with having dozens of sub-projects open simultaneously in their IDE, each with its own build target and dependencies.
 
-In comparison, JavaScript projects tend to be a mess because developers fear to split their code in modules. Tools like [lerna](https://github.com/lerna/lerna) help you create a proper monorepo and rationalize the development of a complex project.
-However this kind of tool comes with a lot of functionality built-in, and using it without understanding how it works may be a hazard for the maintainability of your project. What's more, working in TypeScript requires a little bit more work.
+In comparison, JavaScript projects tend to be a mess because of the lack of an idiomatic way to split code across packages. Tools like [lerna](https://github.com/lerna/lerna) help you create a proper JavaScript monorepo and rationalize the development of a complex project. However these tools pack a lot of features which take some time to properly master. The added complexity may result in misunderstanding and in the end the time gained by deploying the tool may be lost in obscure debugging sessions. Additionally, TypeScript is a different beast and requires more work to integrate properly.
 
-In this tutorial, I will explain how you can create a proper monorepo structure for your TypeScript projects, using **no framework** so you can understand how it actually works. If you follow this guide, you will be able to create rather large TypeScript projects which have no problem scaling, and publishing your code will be easier than ever!
+In this tutorial, you will learn the basic principles required to properly architecture a TypeScript project. I intentionally present an opinionated monorepo structure but feel free to reuse the tricks you'll learn here and apply them to your specific context!
 
-We will use a barebone example application to illustrate this tutorial. You can download the tutorial files [here](/assets/ts-structure-tuto/ts-tutorial-1.zip) to follow along.
+I created a minimalist project skeleton so you can follow along this tutorial. You can download it [here](/assets/ts-structure-tuto/ts-tutorial-1.zip).
 
-## The boring stuff
+## The setup
 
 Download and unpack the [tutorial files](/assets/ts-structure-tuto/ts-tutorial-1.zip) into your workspace. You should end up with a project containing a `packages` sub-folder with three so-called packages inside.  
 Each package is an independent unit of code, with its own build target and test suite:
@@ -32,8 +29,7 @@ Each package is an independent unit of code, with its own build target and test 
 
 Go ahead and open the top-level folder in your favorite IDE (it should be [VSCode](https://code.visualstudio.com/), if it's not, then go download it now, I'll wait...).
 
-The sample files contain commented code which you will have to uncomment as you progress through this tutorial. The goal is that you clearly understand every little bit of the architecture and that no magic is left.
-
+The sample files contain commented code which you will have to uncomment as you progress through this tutorial.  
 First, you'll want to check that everything works as intended. Navigate to `packages/tstuto-web-client` and run:
 
 ```sh
@@ -173,7 +169,7 @@ We see in the next part how to handle those two issues.
 **Next part is coming soon, stay tuned!**
 
 
-# Appendix: How did you serve the client from the server?
+# Appendix: How did you serve the client files again?
 
 You may have noticed that our server also takes care to serve the client. While there are scenarios where you will want to ship the client separately, serving it from the API server is quite handy for development and suits a broad range of practical use-cases.
 
@@ -188,4 +184,8 @@ server.use(express.static(staticDirToServer));
 
 We get the absolute path to the `tstuto-web-client` module and concatenate the `public` directory to it; we then instruct express to serve this folder as static content. Doing it this way allows us to keep the server and client completely separated and avoid any copy which would make our build system much more complex.
 
-**You should use the module name `'tstuto-web-client'` instead of the relative path `'../../../tstuto-web-client'` now that you have learned the NODE_PATH trick.** The tutorial files shipped with the relative path such that the example would work out of the box. It is however an anti-pattern to use the relative path as we will see in the upcoming part.
+**You should use the module name `'tstuto-web-client'` instead of the relative path `'../../../tstuto-web-client'` now that you have learned the NODE_PATH trick.** The reason the tutorial files ship with the relative path is to make it work as-is (even if you don't set NODE_PATH), but this will break when you'll try to deploy the app in the next part.
+
+---
+
+_Thanks [Ludovic](https://lbarman.ch/) for proofreading this tutorial._
