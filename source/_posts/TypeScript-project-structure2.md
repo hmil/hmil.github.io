@@ -1,7 +1,12 @@
 ---
-title: TypeScript project structure - Chapter 2
+title: "TypeScript sanity: how to manage and publish a multi-package TypeScript project"
 date: 2018-05-14 17:00:00
 tags:
+  - TypeScript
+  - monorepo
+  - architecture
+categories:
+  - software engineering
 ---
 
 In the [previous part](https://blog.hmil.fr/2018/03/TypeScript-project-structure/), we've seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages. Which is what we will cover in this chapter.
