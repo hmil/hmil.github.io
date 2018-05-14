@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "hexo server",
     "generate": "hexo generate",
+    "publish": "hexo deploy --generate",
     "hexo": "hexo"
   },
   "hexo": {
