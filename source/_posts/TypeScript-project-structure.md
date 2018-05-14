@@ -17,11 +17,11 @@ In comparison, JavaScript projects tend to be a mess because of the lack of an i
 
 In this tutorial, you will learn the basic principles required to properly architecture a TypeScript project. I intentionally present an opinionated monorepo structure but feel free to reuse the tricks you'll learn here and apply them to your specific context!
 
-I created a minimalist project skeleton so you can follow along this tutorial. You can download it [here](/assets/ts-structure-tuto/ts-tutorial-1.zip).
+I created a minimalist project skeleton so you can follow along this tutorial. You can download it [here](https://github.com/hmil/ts-seed-project/archive/part1.zip).
 
 ## The setup
 
-Download and unpack the [tutorial files](/assets/ts-structure-tuto/ts-tutorial-1.zip) into your workspace. You should end up with a project containing a `packages` sub-folder with three so-called packages inside.  
+Download and unpack the [tutorial files](https://github.com/hmil/ts-seed-project/archive/part1.zip) into your workspace. You should end up with a project containing a `packages` sub-folder with three so-called packages inside.  
 Each package is an independent unit of code, with its own build target and test suite:
 - The `tstuto-server` package contains the NodeJS server files
 - The `tstuto-web-client` package contains the web application which talks to the server
@@ -121,7 +121,13 @@ Edit `tsconfig.json` at the root of the project and uncomment the line `"baseUrl
 
 > Note 2: You may need to reload your editor after you changed `tsconfig.json`. In VSCode, open the command palette (CTRL+P) and chose "reload window".
 
-Setting `baseUrl` in itself is not enough! TypeScript will not recognize your custom module unless you specified the `type` property in its `package.json`. Open `packages/tstuto-api/package.json`. You will see a line with the text "TODO". Replace it with `"types": "dist/index.d.ts"`. **You want to make extra sure that you got this setting right**. If there is an error here, nobody will let you know, your imports might resolve to `any` and you won't notice your mistake until it's too late.
+Setting `baseUrl` in itself is not enough! TypeScript will not recognize your custom module unless you specified the `type` property in its `package.json`. Open `packages/tstuto-api/package.json`. You will see a line with the text "TODO". Replace it with the following:
+
+```typescript
+"types": "dist/index.d.ts"
+```
+
+**You want to make extra sure that you got this setting right**. If there is an error here, nobody will let you know, your imports might resolve to `any` and you won't notice your mistake until it's too late.
 
 Now if you go back to `packages/tstuto-server` and run `npm run build`, you should get a successful build. However, if you try to start the server with `npm run start`, it will fail. The reason being that node has no idea where your custom modules are located!
 
