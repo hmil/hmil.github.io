@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>SailsJS tutorial &amp;#124; expenses tracking app (Part 4/4) | hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="In the previous parts,we’ve set up a sails application, added some styles and views and implemented a solid backend. It’s now time to finish this application. We will implement the front-end, adjust a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SailsJS tutorial &amp;#124; expenses tracking app (Part 4&#x2F;4)">
+<meta property="og:url" content="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-4/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:description" content="In the previous parts,we’ve set up a sails application, added some styles and views and implemented a solid backend. It’s now time to finish this application. We will implement the front-end, adjust a">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2014/12/sails-tuto-capture.png">
+<meta property="og:updated_time" content="2018-04-23T18:02:59.726Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SailsJS tutorial &amp;#124; expenses tracking app (Part 4&#x2F;4)">
+<meta name="twitter:description" content="In the previous parts,we’ve set up a sails application, added some styles and views and implemented a solid backend. It’s now time to finish this application. We will implement the front-end, adjust a">
+<meta name="twitter:image" content="https://hmil.github.io/assets/archive/2014/12/sails-tuto-capture.png">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-archive/sailsjs-tutorial-expenses-tracking-app-part-4" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-4/" class="article-date">
+  <time datetime="2014-12-18T16:22:14.000Z" itemprop="datePublished">2014-12-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/archived/">archived</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      SailsJS tutorial &amp;#124; expenses tracking app (Part 4/4)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="http://blog.hmil.fr/2014/12/sailsjs-tutorial-expenses-tracking-app-part-3" target="_blank" rel="noopener">In the previous parts</a>,<br>we’ve set up a sails application, added some styles and views and implemented a solid backend. It’s now time to finish this application. We will implement the front-end, adjust a few settings and give some tracks to continue the development.</p>
+<h2 id="The-app-page"><a href="#The-app-page" class="headerlink" title="The app page"></a>The app page</h2><p>To render our app page, let’s open the MainController (in <em>api/controllers</em>) and replace the contents of the app action with<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">app: function (req, res) &#123;</span><br><span class="line">  res.view();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>What this does is it renders the view <em>views/main/app.ejs</em> because we are in the app action of the MainController. You should have already added this view in <a href="http://blog.hmil.fr/2014/12/sailsjs-tutorial-expenses-tracking-app-part-2" target="_blank" rel="noopener">part 2</a>.</p>
+<p>Next we only want logged-in users to access our app so let’s add the following lines in <em>config/policies.js</em><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">MainController: &#123;</span><br><span class="line">  <span class="string">'app'</span>: [<span class="string">'passport'</span>, <span class="string">'sessionAuth'</span>]</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>Also we want some more information about our users than we currently get, like their profile picture and full name. To do this, we’ll need to hack a bit into what sails-generate-auth generated us. Open <em>api/services/passport.js</em>, line 82 there’s the code fetching user attributes</p>
+<p><pre lang="javascript" line="82"><br>  // If the profile object contains a list of emails, grab the first one and<br>  // add it to the user.<br>  if (profile.hasOwnProperty(‘emails’)) {<br>    user.email = profile.emails[0].value;<br>  }<br>  // If the profile object contains a username, add it to the user.<br>  if (profile.hasOwnProperty(‘username’)) {<br>    user.username = profile.username;<br>  }</pre></p>
+<p>  // If neither an email or a username was available in the profile, we don’t<br>  // have a way of identifying the user in the future. Throw an error and let<br>  // whoever’s next in the line take care of it.<br>  if (!user.username &amp;&amp; !user.email) {<br>    return next(new Error(‘Neither a username nor email was available’));<br>  }</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">**Remove all this** and insert this instead:</span><br><span class="line">&lt;pre lang=&quot;javascript&quot; line=&quot;82&quot;&gt;</span><br><span class="line">  if (!profile.hasOwnProperty(&apos;id&apos;) </span><br><span class="line">      || !profile.hasOwnProperty(&apos;displayName&apos;)</span><br><span class="line">      || !profile.hasOwnProperty(&apos;photos&apos;)</span><br><span class="line">      || profile.photos.length == 0 ) &#123;</span><br><span class="line">    sails.log.error(&apos;not enough info&apos;);</span><br><span class="line">    next(new Error(&apos;Your login provider did not provide enough information.&apos;));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  user.username = profile.displayName;</span><br><span class="line">  user.picture = profile.photos[0].value;</span><br></pre></td></tr></table></figure>
+<h2 id="Scripting"><a href="#Scripting" class="headerlink" title="Scripting"></a>Scripting</h2><p>This tutorial aims to be neutral regarding what client technology you use, therefore we we’ll do DOM stuff “manually” with jquery and only use backbone and underscore to have a tidy collection of expenditures. You’ll be able to follow even if you’ve never heard of backbone.</p>
+<p>First, <a href="http://hmil.fr/public/sails_tuto_1.zip" target="_blank" rel="noopener">download this archive</a>. It contains templates, js models and libs as well as a skeleton for our app script. Copy the assets into your assets folder.<br>You can lift your server and log-into the app. You should see a blank table. Now open your web console and it should display some errors. This is due to the fact that the script you just copied are linked to the layout in no particular order. You can see this by looking at <em>views/layout.ejs</em>.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;!--SCRIPTS--&gt;</span><br><span class="line">&lt;script src=<span class="string">"/js/dependencies/sails.io.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;script src=<span class="string">"/js/dependencies/backbone.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;script src=<span class="string">"/js/dependencies/bootstrap.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;script src=<span class="string">"/js/dependencies/jquery-1.11.1.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;script src=<span class="string">"/js/dependencies/perfect-scrollbar.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;script src=<span class="string">"/js/dependencies/underscore.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;script src=<span class="string">"/js/ExpenditureModel.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;script src=<span class="string">"/js/app.js"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br><span class="line">&lt;!--SCRIPTS END--&gt;</span><br></pre></td></tr></table></figure></p>
+<p>Here, backbone and bootstrap are included after jquery and underscore. To correct this, let’s take a look at <em>tasks/pipeline.js</em>. We will change <em>jsFilesToInject</em> such that our js files are included in the right order:</p>
+<p><pre lang="javascript" line="24"><br>var jsFilesToInject = [<br>  // Underscore &amp; jquery before backbone<br>  ‘js/dependencies/jquery-1.11.1.js’,<br>  ‘js/dependencies/perfect-scrollbar.js’,<br>  ‘js/dependencies/underscore.js’,</pre></p>
+<p>  // Dependencies like jQuery, or Angular are brought in here<br>  ‘js/dependencies/*<em>/</em>.js’,</p>
+<p>  // The app classes before the app index<br>  ‘js/ExpenditureModel.js’,</p>
+<p>  // All of the rest of your client-side js files<br>  // will be injected here in no particular order.<br>  ‘js/app.js’<br>];</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">While we are here, change _templateFilesToInject_ such that it looks for **.ejs** files instead of **.html**.</span><br><span class="line">&lt;pre lang=&quot;javascript&quot; line=&quot;51&quot;&gt;</span><br><span class="line">var templateFilesToInject = [</span><br><span class="line">  &apos;templates/**/*.ejs&apos;</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+<p>Save this file and if sails was running in background, the build tasks should run and now our js files should be included in the right order and our templates are compiled.</p>
+<p>Now, let’s write real code. Open <em>assets/js/app.js</em>. This file contains already everything we need to handle the DOM of the page. What we’ll focus on is how to get data from the server and keep it in sync using Sails’ real-time capabilities. For simplicity we’ll do everything over the socket connection so that we don’t mix protocols.</p>
+<p>We have a backbone expenditure collection that we’ll use to store our expenditures locally and propagate events.</p>
+<p>First thing we’ll do is fetch a list of expenditures from the server. This is what <em>io.socket.get</em> is for.<br>Let’s add those models to our collection as soon as we get them.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">io.socket.get(<span class="string">'/expenditure'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">models</span>) </span>&#123;</span><br><span class="line">  expenditures.set(models, &#123;<span class="attr">parse</span>: <span class="literal">true</span>&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>We pass the <em>parse: true</em> option to turn the date string into an actual date object.<br>Add some expenditures with the shortcut routes (for instance <a href="http://localhost:1337/expenditure/create?amount=32&amp;description=resto" target="_blank" rel="noopener">/create?amount=32&amp;description=resto</a>) and now you should see them displayed in the table like this:</p>
+<p><a href="/assets/archive/2014/12/sails-tuto-capture.png"><img src="/assets/archive/2014/12/sails-tuto-capture.png" alt="Yay, we got some data !"></a><br><em>If you can’t see the picture, that’s probably because you created a user before we told passport to get profile pictures of new users. Stop the server, delete <em>.tmp/localDiskDb.db</em>, then start the server again. Next time you log in, it will create a user from scratch and now your profile picture should be included with it.</em></p>
+<p>Now it would be better if we could add expenditures directly from the app. We can insert the code that handles the create form submit action on line 58.</p>
+<p><pre lang="javascript" line="58"><br>createForm.submit(formAction(createForm, function(formData) {<br>  io.socket.post(‘/expenditure’, formData, function(data, res) {<br>    if (res.statusCode === 201) {<br>      expenditures.add(new expenditures.model(data, {parse: true}));<br>    } else {<br>      console.log(data);<br>    }<br>  });<br>}));</pre></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Here we use the _post_ method of our socket to create the model, then we check the status code and create a new model if everything went fine. If there was an error, we just log the response body. It would be better to have a proper error handling mechanism of course but we won&apos;t do that in this tutorial.</span><br><span class="line"></span><br><span class="line">You can now see that our models are added to the collection and if you refresh they are still there. Good, now if you open a second tab it won&apos;t automatically update one tab while you add a model in the other. To do this, we need to fill the blank on line 23.</span><br><span class="line">This callback is invoked every time something changes in our expenditures collection. The passed-in _evt_ object has a _verb_ property which can take one of &quot;created&quot;, &quot;destroyed&quot;, &quot;updated&quot; values.</span><br><span class="line">With a simple switch, we can handle each of these cases:</span><br><span class="line">```javascript</span><br><span class="line"></span><br><span class="line">io.socket.on(&apos;expenditure&apos;, function(evt) &#123;</span><br><span class="line">  switch (evt.verb) &#123;</span><br><span class="line">    case &apos;created&apos;:</span><br><span class="line">      expenditures.add(evt.data, &#123;parse: true&#125;);</span><br><span class="line">      break;</span><br><span class="line">    case &apos;destroyed&apos;:</span><br><span class="line">      expenditures.remove(evt.id);</span><br><span class="line">      break;</span><br><span class="line">    case &apos;updated&apos;:</span><br><span class="line">      var data = _.extend(&#123;id: evt.id&#125;, evt.data)</span><br><span class="line">      expenditures.set(data, &#123; </span><br><span class="line">        parse: true, </span><br><span class="line">        remove: false </span><br><span class="line">      &#125;);</span><br><span class="line">      break;</span><br><span class="line">    default:</span><br><span class="line">      throw new Error(&quot;Unknown verb: &quot;+evt.verb);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>That’s all we need to make our app real-time !</p>
+<p>Now how about deleting items. We have an event handler for that on what should now be line 48 and I think you’ve guessed what we’ll write here.</p>
+<p><pre lang="javascript" line="48"><br>io.socket.delete(‘/expenditure/‘+id, function(data, res) {<br>  if (res.statusCode === 200) {<br>    expenditures.remove(id);<br>  } else {<br>    console.log(data);<br>  }<br>});</pre></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">And last but not least, we want to edit our records. This is done by clicking the edit icon which shows up a dialog. We need to write what happens when this dialog is submitted.</span><br><span class="line"></span><br><span class="line">```javascript</span><br><span class="line"></span><br><span class="line">$(&apos;#editModal-accept-btn&apos;).click(itemAction(function(evt) &#123;</span><br><span class="line">// Retrieve form data</span><br><span class="line">var formData = getFormData(editForm);</span><br><span class="line">var id = editedItem.id;</span><br><span class="line"></span><br><span class="line">// Save to the server</span><br><span class="line">io.socket.put(&apos;/expenditure/&apos;+id, formData, function(data, res) &#123;</span><br><span class="line">  // If successful</span><br><span class="line">  if (res.statusCode === 200) &#123;</span><br><span class="line">    // update the collection locally</span><br><span class="line">    var data = _.defaults(&#123;id: id&#125;, data);</span><br><span class="line">    expenditures.set(</span><br><span class="line">      data, </span><br><span class="line">      &#123;parse: true, remove: false&#125;</span><br><span class="line">    );</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    console.log(data);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><strong>Congratulations, you now have a fully functionnal app !</strong></p>
+<p>Now if you log-in as another user, the edit and delete actions are shown on expenditures you did not create. Of course, the server forbids this but it would be better if they were hidden. To do this, we’ll need to know which client is currently connected from the client-side javascript. The easiest way to do it is by adding a script in layout.ejs which injects a user object for the logged-in user in the client’s javascript scope. We need to be careful though as layout can be displayed even when the user is not logged in. Add this in <em>views/layout.ejs</em> right before the other scripts.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;script type=<span class="string">"text/javascript"</span>&gt;</span><br><span class="line">  <span class="keyword">var</span> user = <span class="xml"><span class="tag">&lt;<span class="name">%-</span> <span class="attr">JSON.stringify</span>(<span class="attr">req.user</span>) || '<span class="attr">null</span>' %&gt;</span>;</span></span><br><span class="line"><span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br></pre></td></tr></table></figure></p>
+<p>Now we can use this client object in our client-side scripts. Let’s edit <em>assets/templates/expenditureItem.ejs</em>, we will wrap the actions in an if statement like this:</p>
+<p><pre lang="javascript" line="14"><br>&lt;% // person is available as a template variable. user is taken from the global scope<br> if (person.id === user.id) { %&gt;<br>  [“&gt;</pre></p>
+<p>  ](#)<br>  [“&gt;</p>
+<p>  ](#)<br>&lt;% } %&gt;</p>
+<p><code>`</code></p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>From there, if you want to use mongodb as your data store, the only thing you need to do is put your configuration in <em>config/connections.js</em> and set that connection in <em>config/model.js</em>. I think it’s a really great framework with powerful features despite the fact it currently lacks contributors (and documentation). </p>
+<p>I hope this tutorial gave you a good insight at how Sails works and that you’ll have fun building awesome app with it! Feel free to ask any question on <a href="https://twitter.com/HadrienMilano" target="_blank" rel="noopener">twitter</a> or add a comment below.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-4/" data-id="cjh6d84dj0021l3yh4w0mbs3r" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-4/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Hacking FunRun2 — how to reverse engineer a Corona app
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SailsJS tutorial &amp;#124; expenses tracking app (Part 3/4)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  var disqus_url = 'https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-4/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

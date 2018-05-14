@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>GitHub&#39;s &#34;merge pull request&#34; is wrong | hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="This is the story of Bob. Bob is working on some cool project on github. He’s written tests and runs them continuously on travis. Bob asks his contributors to write tests for new features they introdu">
+<meta name="keywords" content="git,github">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GitHub&#39;s &quot;merge pull request&quot; is wrong">
+<meta property="og:url" content="https://hmil.github.io/2015/11/archive/githubs-merge-pull-request-is-wrong/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:description" content="This is the story of Bob. Bob is working on some cool project on github. He’s written tests and runs them continuously on travis. Bob asks his contributors to write tests for new features they introdu">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2015/11/button_of_doom.png">
+<meta property="og:updated_time" content="2018-04-23T18:02:59.725Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GitHub&#39;s &quot;merge pull request&quot; is wrong">
+<meta name="twitter:description" content="This is the story of Bob. Bob is working on some cool project on github. He’s written tests and runs them continuously on travis. Bob asks his contributors to write tests for new features they introdu">
+<meta name="twitter:image" content="https://hmil.github.io/assets/archive/2015/11/button_of_doom.png">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-archive/githubs-merge-pull-request-is-wrong" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/" class="article-date">
+  <time datetime="2015-11-21T13:49:06.000Z" itemprop="datePublished">2015-11-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/software-engineering/">software engineering</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      GitHub&#39;s &#34;merge pull request&#34; is wrong
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>This is the story of Bob. Bob is working on some cool project on github. He’s written tests and runs them continuously on <a href="https://travis-ci.org" target="_blank" rel="noopener">travis</a>. Bob asks his contributors to write tests for new features they introduce. Using GitHub’s pull requests, he can make sure no bugs are introduced by looking for the green tick next to the commit number. If you look at the commit tree in Bob’s repository, you’ll probably find something like <a href="http://nvie.com/posts/a-successful-git-branching-model/" target="_blank" rel="noopener">this</a>.</p>
+<p>Bob states in his contribution guide that people can fork <em>master</em> to work on new features. He guarantees that master’s tests always pass and therefore, individual contributors don’t need to worry that much about errors made by other developers.</p>
+<p>If you’re familiar with github then you are probably familiar with this workflow and you’ll think that it’s perfectly reasonable.</p>
+<p>But you’ll be wrong. Bob got overly enthusiastic about github’s UI and will soon discover that <strong>he’s been wrong all this time</strong>.</p>
+<h2 id="A-catastrophic-scenario"><a href="#A-catastrophic-scenario" class="headerlink" title="A catastrophic scenario"></a>A catastrophic scenario</h2><p>Say two contributors, Alice and Charlie, are writing code for Bob’s project in their respective branches. In this project, we find the following code for operating Bob’s car:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(String action)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">"OPEN_DOOR"</span>:</span><br><span class="line">       open_door();</span><br><span class="line">       <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Now Alice thinks it would be better if Bob used an <strong>enum</strong> instead of a string. She changes the function to the following and opens a pull request on Bob’s project.<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(Action action)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">    <span class="keyword">case</span> Action.OPEN_DOOR:</span><br><span class="line">       open_door();</span><br><span class="line">       <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Bob opens his project page and sees a pull request. He thinks Alice’s modification makes sense and, since all tests passed, he clicks on <em>the green button</em>.</p>
+<p>[caption id=”attachment_221” align=”alignnone” width=”776”]<a href="/assets/archive/2015/11/button_of_doom.png"><img src="/assets/archive/2015/11/button_of_doom.png" alt="The button of doom"></a> The button of doom[/caption]</p>
+<p>Meanwhile, Charlie thinks Bob will need to close his car’s door at some point. Charlie adds a new case to the switch:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(String action)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">"OPEN_DOOR"</span>:</span><br><span class="line">       open_door();</span><br><span class="line">       <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">"CLOSE_DOOR"</span>:</span><br><span class="line">       close_door();</span><br><span class="line">       <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The next day, Bob opens his project on GitHub and sees Charlie’s pull request. All tests passed, no merge conflict, that’s a clear <acronym title="Looks Good To Me">LGTM</acronym> and Bob merges the code.</p>
+<p>A few days later, Bob receives complaints from multiple developers, they forked master and it doesn’t build!</p>
+<h2 id="What-could-go-wrong"><a href="#What-could-go-wrong" class="headerlink" title="What could go wrong?"></a>What could go wrong?</h2><p>The problem lies in a common misunderstanding of the following assumptions. </p>
+<ul>
+<li>Different PRs must be completely independent</li>
+<li>No merge conflicts &ne; No conflicts</li>
+</ul>
+<p>If you accept one of these to be violated, then expect your main branch to fail tests!</p>
+<p>If we speak in terms of diff, then Alice’s diff is the following:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(String action)</span> </span>&#123;</span><br><span class="line">+ <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(Action action)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">-     <span class="keyword">case</span> <span class="string">"OPEN_DOOR"</span>:</span><br><span class="line">+     <span class="keyword">case</span> Action.OPEN_DOOR:</span><br><span class="line">         open_door();</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>While Bob’s diff looks like this:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">...</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">+     <span class="keyword">case</span> <span class="string">"CLOSE_DOOR"</span>:</span><br><span class="line">+        close_door();</span><br><span class="line">+        <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>Put together we get<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(String action)</span> </span>&#123;</span><br><span class="line">+ <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(Action action)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">-     <span class="keyword">case</span> <span class="string">"OPEN_DOOR"</span>:</span><br><span class="line">+     <span class="keyword">case</span> Action.OPEN_DOOR:</span><br><span class="line">         open_door();</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">+     <span class="keyword">case</span> <span class="string">"CLOSE_DOOR"</span>:</span><br><span class="line">+        close_door();</span><br><span class="line">+        <span class="keyword">break</span>;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>This diff <strong>does not cause a merge conflict</strong> but it is actually in conflict!</p>
+<h2 id="–no-ff-and-the-button-of-doom"><a href="#–no-ff-and-the-button-of-doom" class="headerlink" title="–no-ff and the button of doom"></a>–no-ff and the button of doom</h2><p>The flaw resides in that big old “merge pull request” button. While the green checks above the button and its fat style make pressing it a rewarding thing, it hides the real danger behind it: a blind merge!</p>
+<p>The above example looks like this in terms of commit history:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">       +-PR_Charlie-+</span><br><span class="line">      /              \</span><br><span class="line">     +--PR_Alice--+   \</span><br><span class="line">    /              \   \</span><br><span class="line">---+----------------x---x</span><br><span class="line">                        |</span><br><span class="line">                       master</span><br></pre></td></tr></table></figure></p>
+<p>All changes introduced by Alice and Charlie on their respective PRs have been tested, but the merge commits (marked ‘x’ above) were not! This is called a “non fast-forward” merge (–no-ff in git) and is basically like committing directly on master.</p>
+<h2 id="The-right-way-to-do-it"><a href="#The-right-way-to-do-it" class="headerlink" title="The right way to do it"></a>The right way to do it</h2><p>Assuming you are like Bob and want your main branch to always pass tests, then here is the right way to do this: Merge master into the PR fisrt, and merge only when fast forward. It would look like that:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">Initial state: both PRs are unmerged:</span><br><span class="line"></span><br><span class="line">        +-PR_Charlie-+</span><br><span class="line">       /              </span><br><span class="line">      +--PR_Alice--+  </span><br><span class="line">     /                 </span><br><span class="line"> ---+</span><br><span class="line">    |</span><br><span class="line">  master</span><br><span class="line"></span><br><span class="line">on master: git merge --ff-only PR_Alice</span><br><span class="line"></span><br><span class="line">      +-PR_Charlie-+</span><br><span class="line">     /                              </span><br><span class="line"> ---+--PR_Alice--+</span><br><span class="line">                 |</span><br><span class="line">               master</span><br><span class="line"></span><br><span class="line">on PR_Charlie: git merge master</span><br><span class="line"></span><br><span class="line">                  merge branch master into PR_Charlie   </span><br><span class="line">                     |</span><br><span class="line">      +-PR_Charlie-+-+</span><br><span class="line">     /              /                  </span><br><span class="line"> ---+--PR_Alice----+</span><br><span class="line">                   |</span><br><span class="line">                 master</span><br><span class="line"></span><br><span class="line">Then on master: git merge --ff-only PR_Charlie</span><br><span class="line"></span><br><span class="line">      +-PR_Charlie-+</span><br><span class="line">     /              \                  </span><br><span class="line"> ---+--PR_Alice----+-+</span><br><span class="line">                     |</span><br><span class="line">                   master</span><br></pre></td></tr></table></figure>
+<p>The end result is exactly the same as before EXCEPT that master was merged into the PR first, and this (if properly pushed to github) allows the automated tools to test the last commit. This ensures that master builds because master will always be on a commit that has been tested before.</p>
+<p>Many beginner (and even advanced) programmers get fooled into thinking that merging a green pull request cannot harm. In an ideal world, clicking the green button would: merge master into the branch, wait for the tests to pass, and on success, fast-forward master to the merge commit. But unfortunately I don’t think this is coming anytime soon. In the meantime, think about it twice before you press the <em>button of doom</em>. And when in doubt, run the merge sequence manually in the right order. This may save you a few hours of debugging.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2015/11/archive/githubs-merge-pull-request-is-wrong/" data-id="cjh6d84dd001ql3yhbde31qvl" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2015/11/archive/githubs-merge-pull-request-is-wrong/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/github/">github</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/10/archive/you-should-worry-about-vary/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          You should worry about Vary
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hacking FunRun2 — how to reverse engineer a Corona app</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  var disqus_url = 'https://hmil.github.io/2015/11/archive/githubs-merge-pull-request-is-wrong/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

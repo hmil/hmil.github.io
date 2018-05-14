@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>Hacking FunRun2 — how to reverse engineer a Corona app | hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Disclaimer: This article is a bit old and does not apply to recent versions of the corona sdk. It is put here for educational purpose, showing how one may try to break into this kind of applications.">
+<meta name="keywords" content="funrun,funrun2,hack,reverse engineering,android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hacking FunRun2 — how to reverse engineer a Corona app">
+<meta property="og:url" content="https://hmil.github.io/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:description" content="Disclaimer: This article is a bit old and does not apply to recent versions of the corona sdk. It is put here for educational purpose, showing how one may try to break into this kind of applications.">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2015/02/2015-02-13-17-38-04.jpg">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2015/02/2015-02-13-17-54-08.jpg">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2015/02/a88.jpg">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2015/02/res_car.png">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2015/02/jump_annot.png">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2015/02/patched.png">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2015/02/modded.jpg">
+<meta property="og:updated_time" content="2018-04-23T18:02:59.724Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hacking FunRun2 — how to reverse engineer a Corona app">
+<meta name="twitter:description" content="Disclaimer: This article is a bit old and does not apply to recent versions of the corona sdk. It is put here for educational purpose, showing how one may try to break into this kind of applications.">
+<meta name="twitter:image" content="https://hmil.github.io/assets/archive/2015/02/2015-02-13-17-38-04.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-00-hacking-funrun2-how-to-reverse-engineer-a-corona-app" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/" class="article-date">
+  <time datetime="2015-02-13T16:27:12.000Z" itemprop="datePublished">2015-02-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/hacking/">hacking</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Hacking FunRun2 — how to reverse engineer a Corona app
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>Disclaimer:</strong> This article is a bit old and does not apply to recent versions of the corona sdk. It is put here <strong>for educational purpose</strong>, showing how one may try to break into this kind of applications. <strong>It is not a magic formula for hacking all corona apps across all versions of the sdk.</strong></p>
+<p><a href="/assets/archive/2015/02/2015-02-13-17-38-04.jpg"><img src="/assets/archive/2015/02/2015-02-13-17-38-04.jpg" alt="funrun2 hack"></a></p>
+<p>If you haven’t played funrun yet, you probably will soon. Funrun2 is one of the best multiplayer mobile games out there. It’s one of these rare games where you can have all the fun from the very first game you play, but still stays enjoyable after month of playing it. It’s my favorite game on mobile and since I had some spare time, I decided to tear it open (yeah, that’s what I do to things I like). It was a bit harder than expected and involves some not so trivial hacking as well as a bit of luck. By the way, yes, all these buttons work.</p>
+<h2 id="The-easy-part"><a href="#The-easy-part" class="headerlink" title="The easy part"></a>The easy part</h2><p>First I need to get my hands on the <em>.apk</em> file. There’s plenty of tools out there to do that, some of them are even <a href="https://github.com/Lekensteyn/apk-downloader" target="_blank" rel="noopener">open source</a>.</p>
+<p>An apk file is an archive, just like a jar or a zip so I can unpack it with regular unzipping tools. This gives me access to a <a href="http://en.wikipedia.org/wiki/Android_application_package" target="_blank" rel="noopener">well documented</a> directory structure. The two things I want are the <em>classes.dex</em> file, containing java bytecode, and the assets directory. Reversing the first one allows me to get access to java source code so it’s pretty obvious why I want to look at it.<br>To understand why the second one is interesting though, you must consider that this game was built with a cross platform framework, namely corona. These kind of framework generally allow you to code your app with some scripting language that gets executed on every platform the same way. Therefore, unless the script is cross compiled to native language (which nobody ever does), it must be stored somewhere. That’s when the assets folder comes to play. It contains only a few images and this <em>resource.car</em> file which extension conveniently matches Corona <em>ARchive</em>. How cool is that ?<br>I open the file in a text editor and mostly get binary-unreadable-shit but there’s also strings like “lua.whatever.that.is.lu”. There are the scripts.<br><em>In case you don’t know: <a href="http://www.lua.org/" target="_blank" rel="noopener">lua</a> is one of the main scripting languages used in games with it’s open-source libraries and tools.</em></p>
+<p>Now I still haven’t figured out where the images and sounds are (the corona archive weights a mere 2MB so it doesn’t contain any asset), but this will come later.</p>
+<h2 id="Things-getting-interesting"><a href="#Things-getting-interesting" class="headerlink" title="Things getting interesting"></a>Things getting interesting</h2><p>Trying to open the corona archive, I quickly realize it’s not a common archive format (even 7-zip can’t open it !). So there are two ways to go: finding the loading procedure in the java code or analyzing the file structure by hand. The first seems more reasonable.<br>But first, let’s decompile the dalvik bytecode into human readable java. These tools are helpful: <a href="https://code.google.com/p/dex2jar/" target="_blank" rel="noopener">dex2jar</a> to covert the <em>.dex</em> to <em>.class</em> (<a href="http://en.wikipedia.org/wiki/Dalvik_%28software%29" target="_blank" rel="noopener">dalvik</a> to <a href="http://en.wikipedia.org/wiki/Java_virtual_machine" target="_blank" rel="noopener">jvm</a>) and <a href="http://jd.benow.ca/" target="_blank" rel="noopener">jd</a> to go back to plain java source code.</p>
+<p>Now I have a load of java source code to look into, great! Let’s look for the string “resource.car”: no results. Looking manually, I quickly find corona’s source code in com/ansca/corona, that’s where the magic must happen. However, nothing is nearly dealing with a “resource” nor a “.car” file. I find however references to images. They were actually located on the device’s external storage (sdcard/Android/obb) in a <em>.obb</em> file. This is something common on android devices (that I wasn’t aware of before doing this hack), my guess is that moving resources allows the apk to be lighter and makes the internal memory footprint smaller. A <em>.obb</em> file is just a zip with a fancy extension. I can grab this file on a computer, edit the images/sounds/whatever and put it back in place. The game still runs with my custom images.</p>
+<p>[caption id=”attachment_177” align=”aligncenter” width=”700”]<a href="/assets/archive/2015/02/2015-02-13-17-54-08.jpg"><img src="/assets/archive/2015/02/2015-02-13-17-54-08.jpg" alt="funrun_image"></a> Besides adding childish drawings to the game, there’s not much that can be done this way.[/caption]</p>
+<p>I’m in a dead-end with the java code. Let’s give a shot at manually reversing the resource.car file:</p>
+<p>I open it with a hex editor and quickly realize the format used is trivial:</p>
+<p>First, a header <del>to rule them all</del>, then comes an index made of each file name + position (address) of it’s contents in the archive, then comes the data block with each file contents.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[header] 16 bytes</span><br><span class="line"></span><br><span class="line">[index]</span><br><span class="line">  [entry]</span><br><span class="line">   [header] (4 bytes) 1</span><br><span class="line">   [block addr] (4 bytes)</span><br><span class="line">   [nameS] (4 bytes)</span><br><span class="line">   [name] (nameS+1 bytes) 0-terminated</span><br><span class="line">   [padding] (0s to complete 4x addr)</span><br><span class="line"></span><br><span class="line">[files]</span><br><span class="line">  [entry]</span><br><span class="line">    [header] (4 bytes) 2</span><br><span class="line">    [??] (4 bytes)</span><br><span class="line">    [size] (4 bytes)</span><br><span class="line">    [file] (no 0 termination)</span><br><span class="line">    [padding] (to next 4x addr)</span><br></pre></td></tr></table></figure></p>
+<p><em>The resource.car file format</em></p>
+<p>Now I didn’t have to code a packer for this format myself because luckily, someone already did that. So I grabbed this <em>corona archive packer/unpacker</em> which you won’t find a link to on my blog.</p>
+<p>It turns out the archive contains uncompressed precompiled lua scripts, using luadec and then luac again you can decompile and then recompile these scripts which is very convenient. These lua scripts define absolutely every aspect of the game. From where a button might be to how fast a player can move and what a specific powerup does.<br>Injecting our custom resource.car in the app is a big deal because I could modify anything in the game.</p>
+<p>First I try modifying something inside the precompiled lua scripts, such as a string since we can easily recognize them. If this works, I can later try to recompile one file from the (modified) source.<br>I repack the resource and put it back in the apk file, sign it with dex2jar (as explained <a href="https://code.google.com/p/dex2jar/wiki/ModifyApkWithDexTool" target="_blank" rel="noopener">here</a>) and install it on my device. I launch the game and, with no real surprise, it crashes.</p>
+<p>I figured there’s probably some kind of check performed against the archive to guarantee integrity. However, the loader is nowhere to be found in the java source. This battle is lost but not the war.</p>
+<h2 id="Going-down"><a href="#Going-down" class="headerlink" title="Going down"></a>Going down</h2><p><a href="/assets/archive/2015/02/a88.jpg"><img src="/assets/archive/2015/02/a88.jpg" alt="a88"></a></p>
+<p>Yeah, maybe Di Caprio is right, we need to go low-level and find this resource loading procedure.<br>Inside the .apk, there’s another directory called “lib”. It contains architecture-specific libraries. You’d usually build a native library either when you have no choice but use C (for instance, lua is written in C) or when you want higher-than-java performances (for a game framework, it makes sense).</p>
+<p>In this lib folder, there’s some lua libraries, but also random libs for sound, video, analytics and whatever. Most importantly I find here a lib called <em>libcorona.so</em>. Let’s quickly open it with a text editor to search for the string “resource.car”, bingo!</p>
+<p>I’ll have to disassemble the lib in order to understand what’s happening in there. It turns out, there’s an amazing tool that does this and it’s called <a href="https://www.hex-rays.com/products/ida" target="_blank" rel="noopener">IDA</a>. It’s more than a cross-architecture disassembler, it does lot’s of stuff but for my purpose I’ll just use it as a disassembler. It handles libcorona very well and kindly gives us the assembly code.</p>
+<p><em>FYI: I picked the armeabi-v7a version so what follows would be different different with an apk targetting another platform</em></p>
+<p>I look again for the string “resource.car” and find it referenced at offset 0x1081D4.</p>
+<p>[caption id=”attachment_180” align=”aligncenter” width=”762”]<a href="/assets/archive/2015/02/res_car.png"><img src="/assets/archive/2015/02/res_car.png" alt="res_car"></a> The only piece of code referring to “resource.car”[/caption]</p>
+<p>&nbsp;</p>
+<p>It took me a while to figure out how things worked, but at some point i had a theory:<br>From the occurence of “resource.car”, I clearly see two execution paths: one that leads to a portion of code referencing the string <em>“could not verify”</em> and exiting, and one that leads to a subroutine that I deduced was meant to initialize the lua runtime or something like that. What stands between them is a fragile Branch No Equal (BNE) that we would like to turn into a rock solid Branch.</p>
+<p>[caption id=”attachment_181” align=”aligncenter” width=”761”]<a href="/assets/archive/2015/02/jump_annot.png"><img src="/assets/archive/2015/02/jump_annot.png" alt="jump_annot"></a> Take the yellow jump to get to the blue subroutine and avoid the nasty red branches[/caption]</p>
+<p>&nbsp;</p>
+<p>Looking at <a href="http://bear.ces.cwru.edu/eecs_382/ARM7-TDMI-manual-pt2.pdf" target="_blank" rel="noopener">this document</a> and some other branch instructions around in the code, I deduced that I needed to change byte x108247 from 1A to EA to turn my BNE into a B. Going back to my hex editor (I should really learn how to use IDA properly some day) I change the aforementioned value.</p>
+<p>[caption id=”attachment_182” align=”aligncenter” width=”715”]<a href="/assets/archive/2015/02/patched.png"><img src="/assets/archive/2015/02/patched.png" alt="patched"></a> It’s a branch![/caption]</p>
+<p>&nbsp;</p>
+<p>Now let’s pack our patched lib back into the apk, sign it, install it, run it… It runs! Let’s see if our custom value is used.</p>
+<p>[caption id=”attachment_185” align=”aligncenter” width=”700”]<a href="/assets/archive/2015/02/modded.jpg"><img src="/assets/archive/2015/02/modded.jpg" alt="modded"></a> First time ever a guessed binary patch works upon first try.[/caption]</p>
+<p>Let’s try the full pipeline: modify the lua source code, compile it, repack the .car and place it back in the .apk. It works provided we use the proper luac version (a quick search for the version string in liblua.so saves you the guessing). That’s it, the path is paved for hours of fun modding the game!</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>I had seen many game cheats and always wondered how they actually work, now I know at least for this one. To illustrate this article, I managed to strip all ads from the game, create a speed hack, fly mode, and unlimited powerups. Hacking the in-game money is harder because only the server issues coins, so even if you trick your phone into thinking you are rich, the server knows how much you really have.<br>I’d like to emphasis that I personally think buying or downloading a cheat for a game is lame and those who do that just deserve a trojan. However, hacking a game is really something fun that one should try. It requires patience, and a capability to keep a clear mind even after hours of work leading nowhere.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/" data-id="cjh6d84cb000el3yhdpftrql9" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/">android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/funrun/">funrun</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/funrun2/">funrun2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hack/">hack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/reverse-engineering/">reverse engineering</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          GitHub&#39;s &#34;merge pull request&#34; is wrong
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-4/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SailsJS tutorial &amp;#124; expenses tracking app (Part 4/4)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  var disqus_url = 'https://hmil.github.io/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

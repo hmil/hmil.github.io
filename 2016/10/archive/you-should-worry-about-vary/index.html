@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>You should worry about Vary | hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="We’ve all heard of XSS, SQLi and CSRF. And although they keep occurring all the time, any decent web framework nowadays has some mechanisms to avoid those. Now did you know CSRF had a little sister? I">
+<meta property="og:type" content="article">
+<meta property="og:title" content="You should worry about Vary">
+<meta property="og:url" content="https://hmil.github.io/2016/10/archive/you-should-worry-about-vary/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:description" content="We’ve all heard of XSS, SQLi and CSRF. And although they keep occurring all the time, any decent web framework nowadays has some mechanisms to avoid those. Now did you know CSRF had a little sister? I">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2018-04-23T18:02:59.727Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="You should worry about Vary">
+<meta name="twitter:description" content="We’ve all heard of XSS, SQLi and CSRF. And although they keep occurring all the time, any decent web framework nowadays has some mechanisms to avoid those. Now did you know CSRF had a little sister? I">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-archive/you-should-worry-about-vary" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/10/archive/you-should-worry-about-vary/" class="article-date">
+  <time datetime="2016-10-16T01:49:15.000Z" itemprop="datePublished">2016-10-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/hacking/">hacking</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      You should worry about Vary
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>We’ve all heard of XSS, SQLi and CSRF. And although they keep occurring all the time, any decent web framework nowadays has some mechanisms to avoid those. Now did you know CSRF had a little sister? It is so poorly known that it seems like it doesn’t even have its own name! Before explaining how it works, let’s see what it can do.</p>
+<h1 id="Some-background"><a href="#Some-background" class="headerlink" title="Some background"></a>Some background</h1><p>Meet Bob, a web dev who is in charge of writing a public facing API. Bob sets the Access-Control-Allow-Origin header to allow all origin domains. Indeed, Bob wants any website to be able to talk to his API. Now, being a thoughtful developer, Bob knows about <a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet" target="_blank" rel="noopener">CSRF</a> and he builds an authentication mechanism that delivers access tokens. Without a proper access token, his API won’t talk!</p>
+<p>Still following? Good, now you may be wondering what this API does. In fact this API allows different services to store and share credentials in the cloud. The way a service gets the credentials is by issuing a request like this one:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /vault/&#123;account&#125;/&#123;service&#125;</span><br><span class="line">Authorization: Basic QWxhZGRpbjpPcGVuU2VzYW1l</span><br></pre></td></tr></table></figure></p>
+<p>Bob heard one day that Auth basic is unbreakable, therefore he is using this method to pass the API key and username.<br>But the backend is doing some crypto stuff and hence requesting the credentials is an expensive operation. Bob adds some Cache-Control information to tell the browser to cache the response for a little bit. This way Bob reduces the load on his server and improves the speed of apps consuming his API.<br>If the credentials check out, the API returns something like this:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">200 OK</span><br><span class="line">Access-Control-Allow-Origin: *</span><br><span class="line">Access-Control-Allow-Headers: Authorization</span><br><span class="line">Cache-Control: no-transform, max-age=600</span><br><span class="line">Content-Length: 42</span><br><span class="line">Content-Type: application/json</span><br><span class="line"></span><br><span class="line">&#123;&quot;username&quot;:&quot;Alice&quot;,&quot;password&quot;:&quot;I4mab055&quot;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Everything works fine until one day, a client complains that her credentials got stolen…<br>Damn it Bob, again?!</p>
+<h1 id="You-just-got-hit"><a href="#You-just-got-hit" class="headerlink" title="You just got hit"></a>You just got hit</h1><p>Bob can check his server log for a while, he will never find anything. The attacker left no evidence behind because he <strong>never even had to talk to Bob’s API</strong>; Everything happened locally, in Alice’s browser. Alice received this stupid email a few days ago and couldn’t resist opening a link to a picture of a <a href="https://i.reddituploads.com/3a16089469a04fe2bec7c3666b3bf169?fit=max&amp;h=1536&amp;w=1536&amp;s=6160f4d2e6b39bb1c1684416878ec2dc" target="_blank" rel="noopener">cat wearing a ninja-turtle mask</a>.<br>While she was watching this picture, a piece of javascript issued an HTTP request in the background to Bob’s API and stole her credentials. But how did the malicious website get an API token in the first place you’ll ask? Well it didn’t. Because it never had to. <strong>A simple request without the Authorization header was enough to get the information.</strong></p>
+<h1 id="Introducing-Vary"><a href="#Introducing-Vary" class="headerlink" title="Introducing: Vary"></a>Introducing: Vary</h1><p>So there’s this thing in the HTTP spec that you may or may not have heard about. It’s called the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary" target="_blank" rel="noopener">Vary</a> header. What it does is inform any cache about which request headers can cause the response to change. <strong>If the Vary header is omitted, then caches will disregard the request headers when deciding whether to serve the response from cache.</strong> In other words, no matter which headers were sent by the client the first time, the response will be cached and served back to every subsequent request until the response expires, regardless of the next request’s headers. Remember how Bob made the response cacheable for 10 minutes? This means that the attack is successful if it happens within 10 minutes of the original request.</p>
+<p>To prevent this issue, the API should send the <em>Vary</em> header in its responses to inform caches that the response will be different for different values of the <em>Authorization</em> header. In our example we get:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">200 OK</span><br><span class="line">Access-Control-Allow-Origin: *</span><br><span class="line">Access-Control-Allow-Headers: Authorization</span><br><span class="line">Cache-Control: no-transform, max-age=600</span><br><span class="line">Content-Length: 42</span><br><span class="line">Content-Type: application/json</span><br><span class="line">**Vary: Authorization**</span><br><span class="line"></span><br><span class="line">&#123;&quot;username&quot;:&quot;Alice&quot;,&quot;password&quot;:&quot;I4mab055&quot;&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="Going-beyond"><a href="#Going-beyond" class="headerlink" title="Going beyond"></a>Going beyond</h1><p>So stealing information is fun but let’s see if we can use this flaw to do something better. Imagine a web page that allows a user to set a message of the day, stores it in the cookies and displays it whenever the user visits the page for the rest of the day. The page is cached and can be fetched cross-domain just like in the previous example and it doesn’t have <em>Vary: Cookie</em>. If a user visits my website, I could issue a request to the greetings page with a custom Cookie. If I manage to perform this request when the page is not in cache yet, then the browser will fetch the page with my custom cookie and store it. Yes, we just found ourselves a cache-poisoning vulnerability. Now guess what happens next if this page allows the greeting message to contain javascript?</p>
+<p>Depending on the cache headers, it may even be possible that the response gets cached on a server sitting between the victim and the origin. In this situation the attacker can read the victim’s data without even running code in her browser! All that is required is a hit on the cache server.</p>
+<h1 id="Wrapping-up"><a href="#Wrapping-up" class="headerlink" title="Wrapping up"></a>Wrapping up</h1><p>I wish this article will at least allow a few people to get awareness about the dangers associated with Cache-Control and the Vary header. This vulnerability is similar to CSRF in that it allows cross domain requests to do some damage. It is harder to exploit and does not allow to reach the server. This however makes it impossible to detect attacks while still allowing some information leakage and defacing. In the case of cache poisoning, it opens up the attacks surface to find other vulnerabilities such as XSS or even SQL injections.</p>
+<p>The fact that this vulnerability lies in the shadow of the big names like XSS makes it more likely to be looked over. In fact it <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-1418" target="_blank" rel="noopener">has occurred before</a> and I bet there are exploitable scenarios in the wild like those discussed above. So be careful next time you build an API and take some time to review your response headers. It can sometimes be trickier than you’d think figuring out which headers make the response change!</p>
+<p>You may want to try out <a href="https://github.com/hmil/invariable-leak" target="_blank" rel="noopener">this quick and dirty proof of concept</a> to see this flaw in action.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2016/10/archive/you-should-worry-about-vary/" data-id="cjh6d84di001yl3yhkz9dd32y" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2016/10/archive/you-should-worry-about-vary/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">GitHub&#39;s &#34;merge pull request&#34; is wrong</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  var disqus_url = 'https://hmil.github.io/2016/10/archive/you-should-worry-about-vary/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

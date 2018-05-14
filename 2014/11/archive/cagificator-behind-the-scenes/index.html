@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>Cagificator: behind the scenes | hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="After a few successful cagifications of my friend’s profile pictures I felt the need for an automated tool to save me some time. So I quickly hacked a cagifier app for that purpose. In this article I">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cagificator: behind the scenes">
+<meta property="og:url" content="https://hmil.github.io/2014/11/archive/cagificator-behind-the-scenes/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:description" content="After a few successful cagifications of my friend’s profile pictures I felt the need for an automated tool to save me some time. So I quickly hacked a cagifier app for that purpose. In this article I">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2014/11/landmarks.jpg">
+<meta property="og:image" content="https://hmil.github.io/assets/archive/2014/11/histograms.png">
+<meta property="og:updated_time" content="2018-04-23T18:02:59.725Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cagificator: behind the scenes">
+<meta name="twitter:description" content="After a few successful cagifications of my friend’s profile pictures I felt the need for an automated tool to save me some time. So I quickly hacked a cagifier app for that purpose. In this article I">
+<meta name="twitter:image" content="https://hmil.github.io/assets/archive/2014/11/landmarks.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-archive/cagificator-behind-the-scenes" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/11/archive/cagificator-behind-the-scenes/" class="article-date">
+  <time datetime="2014-11-19T17:33:58.000Z" itemprop="datePublished">2014-11-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/random/">random</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cagificator: behind the scenes
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>After a few successful cagifications of my friend’s profile pictures I felt the need for an automated tool to save me some time. So I quickly hacked <a href="http://cage.hmil.fr" title="The cagificator" target="_blank" rel="noopener">a cagifier app</a> for that purpose. In this article I will explain a little bit of what’s behind this app and how it could be improved.</p>
+<p>To get started, I analyzed how a manual cagification is done and how it could be automated. When you manually cage someone, you usually follow these steps:<br>1. Find a good candidate face replacement</p>
+<ol start="2">
+<li>Align it with the original face’s features (eyes, mouth, …)<br>3. Adjust the hue/saturation/value<br>4. fade out the edges to get a smooth transition<br><del>5. upload the image as the victim’s facebook profile picture</del></li>
+</ol>
+<p>We quickly see what the main challenges are. First one must identify faces in the picture and extract features positions. Second, a powerful color correction algorithm must be applied. And finally we must be able to choose a suitable candidate from a replacement picture database.</p>
+<p>To make things easier, I decided to manually create a collection of replacements masks. These masks are face pictures with smooth edges and cut just the right way to avoid showing face borders (hair, chin, ears, …). Now on to the serious stuff:</p>
+<h2 id="Face-detection"><a href="#Face-detection" class="headerlink" title="Face detection"></a>Face detection</h2><p><a href="/assets/archive/2014/11/landmarks.jpg"><img src="/assets/archive/2014/11/landmarks.jpg" alt="landmarks"></a><br>There’s this awesome tool called <a href="http://cmp.felk.cvut.cz/~uricamic/flandmark/" title="flandmarks" target="_blank" rel="noopener">flandmarks</a> which allows you to extract facial landmarks from an image. But first you need to get a bounding box for the face. For that I chose to use OpenCV’s haar cascades. There’s a good tutorial on that <a href="http://docs.opencv.org/trunk/doc/py_tutorials/py_objdetect/py_face_detection/py_face_detection.html" target="_blank" rel="noopener">here</a>. Then let flandmarks do its magic and you’ve got the data you need. Flandmarks comes with an example showing how to do that with OpenCV.</p>
+<p>This needs to be computed once for all replacement pictures and then once for every picture submited. To align the faces I just compute a transformation matrix that has one translation, one scaling and a rotation such that the leftmost and rightmost points (edge of the eyes) are aligned and the face “height” (y offset between the eyes and the mouth) is the same. This is basic linear algebra that won’t be discussed here.</p>
+<h2 id="Color-correction"><a href="#Color-correction" class="headerlink" title="Color correction"></a>Color correction</h2><p>The color correction tries to mimic the way I would do it by hand.<br>First I compute an HSV histogram for the target and replacement face. To get the target’s histogram I use the alpha mask of the candidate such that both histograms are computed on the same set of pixels.</p>
+<p>The hue is the easiest part : I compute the mean HUE and then I shift the HUE of every pixel in the replacement picture by the offset between both mean values.<br>For Value and Saturation, it gets a little more tricky. I first tried to multiply V and S of every pixel by some coefficient such that the mean Saturation of the replacement matches the mean Saturation of the target. But this tends to attenuate contrast and the difference in contrast is highly visible.<br>So i tried another way, hopefully a more successful one. If i want to keep the same contrast as the original level, I would actually need to identify the “range” in which most of the histogram bars are and stretch the replacement image histogram to fit the target’s one.<br>The easiest way to do that is compute a linear function y = ax + b that’s applied to the target’s pixels. With a well chosen function we can have the target and replacement histograms overlap as shown in the following picture.</p>
+<p>[caption id=”attachment_44” align=”alignnone” width=”1195”]<a href="/assets/archive/2014/11/histograms.png"><img src="/assets/archive/2014/11/histograms.png" alt="histograms"></a> From left to right: masked target image, replacement image, color-corrected replacement ; Hue (H), Saturation (S) and Value (V) plots.<br> The plot shows: the target image histograms (red) and the corrected replacement (green). We can see that the replacement’s V histogram has been stretched so that it occupies all of the available space (replacement has less contrast than target) and that its S plot was compressed near zero (conversion to black and white).<br> Hue is pointless since this is B&amp;W. The horizontal red line is the threshold.[/caption]</p>
+<p>To determine the coefficients a and b, we pick an arbitrary threshold. All bars lower than this threshold in the histogram are ignored. We can then get the minimum and maximum values for which there is something in the histogram. We do this for both the target and the replacement and then it’s high school math to find a and b.This work is done independently for the S and V channels as they are independent variables.</p>
+<p>In the end, the following correction is applied to each pixel :<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dstS = srcS * aS + bS</span><br><span class="line">dstV = srcV * aV + bV</span><br><span class="line">// Hue is cyclic so instead of capping max and min values, use a modulo</span><br><span class="line">dstH = srcH + (targetMeanH - replacementMeanH) % 255</span><br></pre></td></tr></table></figure></p>
+<h2 id="Candidate-picking"><a href="#Candidate-picking" class="headerlink" title="Candidate picking"></a>Candidate picking</h2><p>The last big feature to implement is choosing the right replacement image. Now I was a bit tired of this project when reaching this point so I definitely chose the lazy option. That is, to compute the transformations mentioned above for each picture, then compute the sum of the absolute color difference for each pixel of the image. The replacement that has the lowest sum is the best.</p>
+<p>This is definitely not optimal since it favors overall low absolute difference but does not deal with face alignments. One could hope that if for instance the mouth is not well aligned, it will yield a higher score and the candidate will be rejected. However it is not the case and many results suffer from alignment problems. Also this solution is computationally intensive and you can see it starts lagging seriously when your image contains multiple faces.</p>
+<p>&nbsp;</p>
+<p>Overall it’s been a fun experiment and although this is far from perfect, I’m amazed to see that for some particular images I wouldn’t have done better myself.<br>Be sure to <a href="http://cage.hmil.fr" target="_blank" rel="noopener">try it out</a> and if you obtain nice results, feel free to link the picture in the comments !</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2014/11/archive/cagificator-behind-the-scenes/" data-id="cjh6d84dc001ol3yha1qq8b0o" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2014/11/archive/cagificator-behind-the-scenes/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          SailsJS tutorial &amp;#124; expenses tracking app (part 1/4)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2014/11/archive/a-cli-tool-to-generate-badges/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">A cli tool to generate badges</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  var disqus_url = 'https://hmil.github.io/2014/11/archive/cagificator-behind-the-scenes/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

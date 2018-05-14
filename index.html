@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="hmil&#39;s blog">
+<meta property="og:url" content="https://hmil.github.io/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hmil&#39;s blog">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-TypeScript-project-structure2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/TypeScript-project-structure2/" class="article-date">
+  <time datetime="2018-05-14T15:00:00.000Z" itemprop="datePublished">2018-05-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="https://blog.hmil.fr/2018/03/TypeScript-project-structure/" target="_blank" rel="noopener">previous part</a>, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages. Which is what we will cover in this chapter.</p>
+<h2 id="To-follow-along"><a href="#To-follow-along" class="headerlink" title="To follow along"></a>To follow along</h2><p>As in the previous part, I have created a simple repository which you can use to follow along this tutorial. This time however, you must first run a script to customize the project before you can start using the repository. The reason is that at the end of this tutorial, you will be able to publish your project to npm. In order to make this work for everyone, we have to rename the packages with a prefix which is unique to each reader of this tutorial. Don’t worry, it only takes a second:</p>
+<ol>
+<li>Download the archive <a href="https://github.com/hmil/ts-seed-project/archive/part2.zip" target="_blank" rel="noopener">for part 2</a>, and unzip it somewhere.</li>
+<li>If you haven’t already, <a href="https://www.npmjs.com/signup" target="_blank" rel="noopener">sign up</a> to npm and <a href="https://docs.npmjs.com/cli/adduser" target="_blank" rel="noopener">log in</a> using the command line. Or, if you don’t care about publishing to npm, go straight to <em>4</em>.</li>
+<li>In the project, run <code>./customize.sh</code></li>
+<li>Otherwise, run the script like so: <code>./customize.sh username</code>, where <em>username</em> is any username you picked. Beware that you will not be able to publish the packages. </li>
+</ol>
+<p>Alternatively, if you do not wish to download the files, you can read the <a href="https://github.com/hmil/ts-seed-project/compare/part1...part2" target="_blank" rel="noopener">diff on github</a>.</p>
+<h2 id="Build-system"><a href="#Build-system" class="headerlink" title="Build system"></a>Build system</h2><p>You may have noticed a new file called <code>Makefile</code> at the top of the project. Indeed, we use <a href="https://www.gnu.org/software/make/" target="_blank" rel="noopener">GNU Make</a> to keep track of dependencies between packages and to define build tasks, and this file is where we tell <em>Make</em> what to do. If you do happen to know a better alternative than <em>Make</em>, please express yourself in the comments.</p>
+<p><em>Make</em> is installed by default on any decent operating system. If you are using windows, you can easily find instructions online to install it.  </p>
+<p>The top-level Makefile defines three things: </p>
+<ul>
+<li>global tasks</li>
+<li>dependencies</li>
+<li>utility tasks</li>
+</ul>
+<h3 id="Global-tasks"><a href="#Global-tasks" class="headerlink" title="Global tasks"></a>Global tasks</h3><p>Global tasks are tasks which must run in all packages. They are defined in this line:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TASKS=build clean test</span><br></pre></td></tr></table></figure>
+<p>For instance, the <code>build</code> task will build all packages at once. To run it, type:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make build</span><br></pre></td></tr></table></figure>
+<p>You will notice that this command also installs npm dependencies, and that it builds the packages in the correct order! Make did not <em>magically</em> figure this out, <em>we</em> instructed it to do so. Keep reading to find out how.</p>
+<h3 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h3><p>Dependency declaration is probably the easiest thing to do in make. Simply write the path to the dependent, followed by a colon, followed by a space-separated list of dependencies.<br>For instance, the dependencies between our packages are defined like so:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">packages/tstuto-api:</span></span><br><span class="line"><span class="section">packages/tstuto-server: packages/tstuto-api</span></span><br><span class="line"><span class="section">packages/tstuto-web-client: packages/tstuto-api</span></span><br></pre></td></tr></table></figure>
+<p>This is how Make knows in which order to build our packages. But how does it know to install npm dependencies first?</p>
+<p>Open the Makefile in <code>tstuto-web-client</code>, which looks something like this:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">BIN=public/dist/main.js</span><br><span class="line">SRC =<span class="variable">$(<span class="built_in">shell</span> find src/ -type f -name '*.ts')</span></span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: build</span></span><br><span class="line"><span class="section">build: <span class="variable">$(BIN)</span></span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(BIN)</span>: package-lock.json <span class="variable">$(SRC)</span></span><br><span class="line">	npm run build</span><br><span class="line"></span><br><span class="line"><span class="section">package-lock.json: package.json</span></span><br><span class="line">	npm install</span><br><span class="line">	<span class="comment"># We "touch" package-lock.json to make sure it was last modified after package.json</span></span><br><span class="line">	touch package-lock.json</span><br></pre></td></tr></table></figure>
+<p>The <code>BIN</code> variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle). We define a dependency between this file and <code>package-lock.json</code>, the file which npm uses to keep track of what needs to be installed in <code>node_modules</code>. We then let Make know that it should run <code>npm install</code> whenever <code>package.json</code> has changed. <strong>This means that Make will run npm install when it needs to!</strong></p>
+<h3 id="Utility-tasks"><a href="#Utility-tasks" class="headerlink" title="Utility tasks"></a>Utility tasks</h3><p>Let’s go back to the top-level Makefile quickly to talk about utility tasks.</p>
+<p>You might encounter repetitive tasks which are specific to one package and cannot be generalized to all packages. For instance, we want a task to start our development server. Such tasks can be defined individually in the top-level Makefile like so:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: serve</span></span><br><span class="line"><span class="section">serve:</span></span><br><span class="line">	<span class="variable">$(MAKE)</span> build</span><br><span class="line">	<span class="variable">$(MAKE)</span> -C packages/tstuto-server serve</span><br></pre></td></tr></table></figure>
+<p>Here we simply create a proxy-task which delegates to the makefile located in <code>packages/tstuto-server</code>. </p>
+<!-- You may be wondering why this task explicitly invokes `make build` instead of defining a dependency on `build`. That is where we reach the limits of Make. Simply put, we cannot depend on global tasks because we used a hack to declare them. The hack itself is at the end of the Makefile but it is not worth discussing in this tutorial.
+-->
+<hr>
+<p>That is about it for the build system. If you are familiar with Make, nothing should have surprised you in the above (except maybe the way we declare the dependencies for <code>npm install</code>). Otherwise, the syntax might look daunting at first, but you’ll quickly get used to it.</p>
+<p>Without further ado, let’s see how we solve the last remaining problem: <strong>publishing</strong>.</p>
+<h2 id="Publishing-Deployment"><a href="#Publishing-Deployment" class="headerlink" title="Publishing/Deployment"></a>Publishing/Deployment</h2><p>The setup we have right now is great for development, but you may be wondering: “How do I deploy this to production?” or “How do I publish this as npm packages?”. Fear not, the answer lies right below!</p>
+<p>You could of course clone your whole repository to your production environment and run <code>make serve</code>. That would work but it would also be quite unprofessional to proceed this way.</p>
+<p>A more idiomatic way to proceed is to publish your packages to an artifact repository. Open source projects usually rely on npm’s public repository while proprietary software editors have their own private artifact servers. Luckily for us, this means that no matter what you are currently trying to do, whether it’s an open or closed source, whether it’s a library, a microservice or a CLI tool, the process to publish it is exactly the same!</p>
+<p>Let’s recap what we want to do before digging into the details: We want to take all of our packages, give them appropriate version numbers and publish them using npm. Also, in the development setup, sibling packages don’t explicitly declare their dependencies on each other. We need to do this in order to avoid a confusion between the local packages and those npm would try to install. However, before releasing a package, we must add these dependencies.</p>
+<p>All the magic happens inside <code>tools/publish.ts</code>. This script does the following:</p>
+<ul>
+<li>Determines the next version number</li>
+<li>Changes all <code>package.json</code> files of all packages to set the correct version number</li>
+<li>Adds the missing dependencies to each <code>package.json</code></li>
+<li>Performs a <code>npm publish</code></li>
+<li>Rolls back the changes made in the <code>package.json</code> files</li>
+</ul>
+<p>I will not dive into the details of this script and I would not advise you to reuse it as-is for your own projects. Instead, you should try it out and understand how it works so you can apply this knowledge to your specific use-case.<br>We call this file from the <code>Makefile</code>, this way we can leverage the build system to run a build and test the packages before performing a release. I will not dig into the details of this script but I invite you to take a look at it by yourself. You can try it out by running:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make publish</span><br></pre></td></tr></table></figure>
+<p><strong>If you are currently logged into npm, this will effectively publish the demo package to <code>@username/tstuto-xxx</code>.</strong></p>
+<p>You can now test your newly-deployed package by running:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g @username/tstuto-server</span><br></pre></td></tr></table></figure>
+<p>(Make sure to replace <em>username</em> with your actual npm username. You may need to run it with <code>sudo</code> depending on your setup).</p>
+<p>And then, start your server by running:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">my-awesome-app</span><br></pre></td></tr></table></figure>
+<p>This should start the application.</p>
+<hr>
+<p>Well done! If you made it so far, you now know the key elements to manage a multi-package TypeScript project, develop it and publish it (or ship it for production).</p>
+<h2 id="Bonus"><a href="#Bonus" class="headerlink" title="Bonus"></a>Bonus</h2><p><code>Make</code> can run multiple tasks in parallel in a way that is consistent with the dependencies declared in the makefile. For instance, to run up to 4 tasks in parallel, run <code>make -j4 build</code>. This can help you speed up builds with many packages when the dependency tree isn’t too deep.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2018/05/TypeScript-project-structure2/" data-id="cjh6d84c80009l3yhg4mccvb9" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2018/05/TypeScript-project-structure2/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-TypeScript-project-structure" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/03/TypeScript-project-structure/" class="article-date">
+  <time datetime="2018-03-26T15:00:00.000Z" itemprop="datePublished">2018-03-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/software-engineering/">software engineering</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I’ve been experimenting with ways to structure a complex TypeScript project lately while working on <a href="https://github.com/lbarman/vaultage" target="_blank" rel="noopener">Vaultage</a> and I have finally found a solution that provides proper isolation and consistency across packages.</p>
+<p>Java developers should be familiar with having dozens of sub-projects open simultaneously in their IDE, each with its own build target and dependencies.</p>
+<p>In comparison, JavaScript projects tend to be a mess because of the lack of an idiomatic way to split code across packages. Tools like <a href="https://github.com/lerna/lerna" target="_blank" rel="noopener">lerna</a> help you create a proper JavaScript monorepo and rationalize the development of a complex project. However these tools pack a lot of features which take some time to properly master. The added complexity may result in misunderstanding and in the end the time gained by deploying the tool may be lost in obscure debugging sessions. Additionally, TypeScript is a different beast and requires more work to integrate properly.</p>
+<p>In this tutorial, you will learn the basic principles required to properly architecture a TypeScript project. I intentionally present an opinionated monorepo structure but feel free to reuse the tricks you’ll learn here and apply them to your specific context!</p>
+<p>I created a minimalist project skeleton so you can follow along this tutorial. You can download it <a href="https://github.com/hmil/ts-seed-project/archive/part1.zip" target="_blank" rel="noopener">here</a>.</p>
+<h2 id="The-setup"><a href="#The-setup" class="headerlink" title="The setup"></a>The setup</h2><p>Download and unpack the <a href="https://github.com/hmil/ts-seed-project/archive/part1.zip" target="_blank" rel="noopener">tutorial files</a> into your workspace. You should end up with a project containing a <code>packages</code> sub-folder with three so-called packages inside.<br>Each package is an independent unit of code, with its own build target and test suite:</p>
+<ul>
+<li>The <code>tstuto-server</code> package contains the NodeJS server files</li>
+<li>The <code>tstuto-web-client</code> package contains the web application which talks to the server</li>
+<li>The <code>tstuto-api</code> package contains shared definitions which the client and server will use to communicate in a type-safe way.</li>
+</ul>
+<p>Go ahead and open the top-level folder in your favorite IDE (it should be <a href="https://code.visualstudio.com/" target="_blank" rel="noopener">VSCode</a>, if it’s not, then go download it now, I’ll wait…).</p>
+<p>The sample files contain commented code which you will have to uncomment as you progress through this tutorial.<br>First, you’ll want to check that everything works as intended. Navigate to <code>packages/tstuto-web-client</code> and run:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install</span><br><span class="line">npm run build</span><br></pre></td></tr></table></figure>
+<p>Then <strong>repeat this step for the <code>tstuto-server</code> package</strong>.</p>
+<p>When you are done, you should have successfully built the demo application. Navigate to the <code>tstuto-server</code> package and run <code>npm start</code> to launch the server. Then, point your web browser at <code>http://localhost:3000</code>. You should see an ugly web page with a button.</p>
+<h2 id="Using-a-shared-package"><a href="#Using-a-shared-package" class="headerlink" title="Using a shared package"></a>Using a shared package</h2><p>Take a look at the files <code>packages/tstuto-server/src/controllers/MoodController.ts</code>, and <code>packages/tstuto-web-client/src/main-client.ts</code>.</p>
+<p>The client uses the <a href="https://github.com/axios/axios" target="_blank" rel="noopener">axios</a> library to fetch a mood from the server over HTTP. If you are a type safety freak, something should tickle your senses here: the communication is not safe. Indeed, look at the type returned by the <code>axios</code> call in <code>main-client.ts</code>: you’ll find that it is of the <code>any</code> type. You can use this object however you want and the TypeScript compiler will never complain, even though your code might crash at run-time!</p>
+<p><img src="/assets/ts-structure-tuto/untyped-response.gif" alt="An untyped response lets you type anything and provides no intellisense"></p>
+<p>This is where the <code>tstuto-api</code> package comes into play. Take a look at <code>packages/tstuto-api/src/index.ts</code>, we define a type and two factory functions there. Compile them by navigating to <code>packages/tstuto-api</code> and running <code>npm install &amp;&amp; npm run build</code>.</p>
+<p>Now, going back to <code>MoodController.ts</code>, we can use the factory methods instead of the inline object definitions:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; happyMood, sadMood &#125; <span class="keyword">from</span> <span class="string">'../../../tstuto-api/src/index'</span>;</span><br><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> express <span class="keyword">from</span> <span class="string">'express'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> HAPPY_THRESHOLD = <span class="number">0.3</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">MoodController</span>(<span class="params">_req: express.Request, res: express.Response</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> indicator = <span class="built_in">Math</span>.random();</span><br><span class="line">    <span class="keyword">if</span> (indicator &gt; HAPPY_THRESHOLD) &#123;</span><br><span class="line">        res.json(happyMood(indicator));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.json(sadMood(indicator));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>In <code>main-client.ts</code>, use the interface to type the object returned by axios:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; IMoodAPIResponse &#125; <span class="keyword">from</span> <span class="string">'../../tstuto-api/src/index'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ... */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// line 23:</span></span><br><span class="line"><span class="keyword">const</span> mood = <span class="keyword">await</span> axios.get&lt;IMoodAPIResponse&gt;(<span class="string">'/api/mood'</span>);</span><br></pre></td></tr></table></figure>
+<p>That is way better, our API is now type-safe. The TypeScript compiler catches typos, we get auto-completion and code refactoring support!</p>
+<p><img src="/assets/ts-structure-tuto/typed-response.gif" alt="A typed response provides completion and catches typos"></p>
+<p>However, written as is, our import statement actually instructs the TypeScript compiler to compile the target module along with ours. This has multiple nasty side effects and defeats the point of having separate modules altogether.</p>
+<p>It would be much cleaner if we could just write:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; IMoodAPIResponse &#125; <span class="keyword">from</span> <span class="string">'tstuto-api'</span>;</span><br></pre></td></tr></table></figure>
+<p>We will see how we can achieve this in the next section:</p>
+<h2 id="Proper-code-sharing"><a href="#Proper-code-sharing" class="headerlink" title="Proper code sharing"></a>Proper code sharing</h2><p>Hope you are still with me here because we are about to enter the meat of this tutorial: how to properly import typescript modules in a monorepo.</p>
+<p>We previously split our code into three modules and used import statements to use code from one module into another. However, we would like to isolate the modules further and import the built artifact rather than importing the raw source code. This means that we want the TypeScript compiler to use the type definitions emitted during compilation and we want node (or webpack for the client) to import the generated JavaScript file rather than the source TypeScript. This helps us avoid bugs spreading across modules and prevents careless developers from producing spaghetti code (to some extent…).</p>
+<p>Go ahead and replace the two imports looking like <code>import xxx from &#39;../../api/src/index&#39;</code> in <code>main-client.ts</code> and <code>MoodController.ts</code> with just <code>import xxx from &#39;api&#39;</code>:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// main-client.ts:</span></span><br><span class="line"><span class="keyword">import</span> &#123; IMoodAPIResponse &#125; <span class="keyword">from</span> <span class="string">'tstuto-api'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// MoodController.ts:</span></span><br><span class="line"><span class="keyword">import</span> &#123; happyMood, sadMood &#125; <span class="keyword">from</span> <span class="string">'tstuto-api'</span>;</span><br></pre></td></tr></table></figure>
+<p>This should give you an error. To make it disappear, we need to instruct the TypeScript compiler to look for our custom packages in the <code>packages</code> folder. Fortunately, there is an option called <code>baseUrl</code> which allows us to do just that.</p>
+<p>Edit <code>tsconfig.json</code> at the root of the project and uncomment the line <code>&quot;baseUrl&quot;: &quot;packages&quot;</code>. This way the TypeScript compiler also looks at the <code>packages</code> directory to resolve package names. </p>
+<blockquote>
+<p>Note 1: Your packages may conflict with packages installed in <code>node_modules</code>; this is why we prefixed all our packages with <code>tstuto-</code>. </p>
+</blockquote>
+<blockquote>
+<p>Note 2: You may need to reload your editor after you changed <code>tsconfig.json</code>. In VSCode, open the command palette (CTRL+P) and chose “reload window”.</p>
+</blockquote>
+<p>Setting <code>baseUrl</code> in itself is not enough! TypeScript will not recognize your custom module unless you specified the <code>type</code> property in its <code>package.json</code>. Open <code>packages/tstuto-api/package.json</code>. You will see a line with the text “TODO”. Replace it with the following:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"types"</span>: <span class="string">"dist/index.d.ts"</span></span><br></pre></td></tr></table></figure>
+<p><strong>You want to make extra sure that you got this setting right</strong>. If there is an error here, nobody will let you know, your imports might resolve to <code>any</code> and you won’t notice your mistake until it’s too late.</p>
+<p>Now if you go back to <code>packages/tstuto-server</code> and run <code>npm run build</code>, you should get a successful build. However, if you try to start the server with <code>npm run start</code>, it will fail. The reason being that node has no idea where your custom modules are located!</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ npm start</span><br><span class="line"></span><br><span class="line">&gt; tstuto-server@0.0.0 start /workspace/ts-project-seed/packages/tstuto-server</span><br><span class="line">&gt; node bin/server.js</span><br><span class="line"></span><br><span class="line">module.js:540</span><br><span class="line">    throw err;</span><br><span class="line">    ^</span><br><span class="line"></span><br><span class="line">Error: Cannot find module <span class="string">'tstuto-api'</span></span><br><span class="line">    at Function.Module._resolveFilename (module.js:538:15)</span><br><span class="line">    at Function.Module._load (module.js:468:25)</span><br><span class="line">    at Module.require (module.js:587:17)</span><br><span class="line">    at require (internal/module.js:11:18)</span><br><span class="line">    at Object.&lt;anonymous&gt; (/workspace/ts-project-seed/packages/tstuto-server/dist/src/controllers/MoodController.js:3:20)</span><br><span class="line">    at Module._compile (module.js:643:30)</span><br><span class="line">    at Object.Module._extensions..js (module.js:654:10)</span><br><span class="line">    at Module.load (module.js:556:32)</span><br><span class="line">    at tryModuleLoad (module.js:499:12)</span><br><span class="line">    at Function.Module._load (module.js:491:3)</span><br></pre></td></tr></table></figure>
+<p>The next trick we will use is called <code>NODE_PATH</code>.</p>
+<p><code>NODE_PATH</code> is an environment variable node uses for pretty much the same purpose TypeScript uses “baseUrl”: it looks for additional <code>node_modules</code> inside the directory specified by <code>NODE_PATH</code>. The problem is that hacks based on environment variables tend to work poorly cross-platform. That’s why we will use <code>cross-env</code>, a nifty node module that lets you define environment variables in a portable way.</p>
+<p>In <code>packages/tstuto-server/package.json</code>, replace the line <code>&quot;start&quot;: &quot;node bin/server.js&quot;,</code> with <code>&quot;start&quot;: &quot;cross-env NODE_PATH=.. node bin/server.js&quot;,</code>.</p>
+<p>Now, when you run <code>npm start</code>, node will also look at the parent directory when resolving modules. This is how it will know that <code>tstuto-api</code> refers to your custom module in <code>packages/tstuto-api</code>.</p>
+<p>Your application should now work properly!</p>
+<h1 id="Next-steps"><a href="#Next-steps" class="headerlink" title="Next steps"></a>Next steps</h1><p>This setup is already a major step towards a cool monorepo TypeScript project architecture. There are things left to fix though.<br>First, it is tedious to go into each sub-project and manually run <code>npm run build</code> each time we change something. In addition, if we add more modules, manually tracking dependencies can quickly become a nightmare. That’s why we need a build and dependency tracking system to handle all of that for us.<br>Second, we would like to export our project, either to be distributed as an npm module or to be deployed somewhere. We can not ship our packages as separate npm packages just like that because they now depend on the directory structure of the repository.</p>
+<p>We see in the next part how to handle those two issues.</p>
+<p><strong>Next part is coming soon, stay tuned!</strong></p>
+<h1 id="Appendix-How-did-you-serve-the-client-files-again"><a href="#Appendix-How-did-you-serve-the-client-files-again" class="headerlink" title="Appendix: How did you serve the client files again?"></a>Appendix: How did you serve the client files again?</h1><p>You may have noticed that our server also takes care to serve the client. While there are scenarios where you will want to ship the client separately, serving it from the API server is quite handy for development and suits a broad range of practical use-cases.</p>
+<p>The trick fits into these three lines of code:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Bind static content to server</span></span><br><span class="line"><span class="keyword">const</span> pathToWebUI = path.dirname(<span class="built_in">require</span>.resolve(<span class="string">'../../../tstuto-web-client'</span>));</span><br><span class="line"><span class="keyword">const</span> staticDirToServer = path.join(pathToWebUI, <span class="string">'public'</span>);</span><br><span class="line">server.use(express.static(staticDirToServer));</span><br></pre></td></tr></table></figure>
+<p>We get the absolute path to the <code>tstuto-web-client</code> module and concatenate the <code>public</code> directory to it; we then instruct express to serve this folder as static content. Doing it this way allows us to keep the server and client completely separated and avoid any copy which would make our build system much more complex.</p>
+<p><strong>You should use the module name <code>&#39;tstuto-web-client&#39;</code> instead of the relative path <code>&#39;../../../tstuto-web-client&#39;</code> now that you have learned the NODE_PATH trick.</strong> The reason the tutorial files ship with the relative path is to make it work as-is (even if you don’t set NODE_PATH), but this will break when you’ll try to deploy the app in the next part.</p>
+<hr>
+<p><em>Thanks <a href="https://lbarman.ch/" target="_blank" rel="noopener">Ludovic</a> for proofreading this tutorial.</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2018/03/TypeScript-project-structure/" data-id="cjh6d84c60008l3yhfqouf32g" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2018/03/TypeScript-project-structure/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/">TypeScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/">architecture</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/monorepo/">monorepo</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/" class="article-date">
+  <time datetime="2017-08-01T13:05:10.000Z" itemprop="datePublished">2017-08-01</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/software-engineering/">software engineering</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Today we will take a look at a couple ways to improve your TypeScript code. By applying those techniques we will get code that is more readable, contains less bugs and is objectively higher-level without any downside. How cool is that ?</p>
+<h2 id="An-example-to-get-started"><a href="#An-example-to-get-started" class="headerlink" title="An example to get started"></a>An example to get started</h2><p>I like to use examples to illustrate what I’m talking about, so let’s start with the following code:<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">class</span> User &#123;</span><br><span class="line">    <span class="keyword">constructor</span>(<span class="params"></span></span><br><span class="line"><span class="params">            <span class="keyword">public</span> name: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** A user may want to fetch her introduction sentence from an async source so</span></span><br><span class="line"><span class="comment">      * we use a callback to handle the asynchronous execution flow.</span></span><br><span class="line"><span class="comment">      */</span></span><br><span class="line">    <span class="keyword">public</span> introduce(cb: <span class="function">(<span class="params">msg: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        setImmediate(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">            cb(<span class="string">`Hello, my name is <span class="subst">$&#123;this.name&#125;</span>`</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> App &#123;</span><br><span class="line">    user?: User;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> login(user: User): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.user = user;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> renameUser(newName: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.user.name = newName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> introduceUser(cb: <span class="function">(<span class="params">err: <span class="built_in">string</span> | <span class="literal">null</span>, msg?: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.user.introduce(<span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">            cb(<span class="literal">null</span>, msg);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> App();</span><br><span class="line">app.introduceUser(<span class="function">(<span class="params">err, res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">return</span> <span class="built_in">console</span>.error(err);</span><br><span class="line">    <span class="built_in">console</span>.log(res);</span><br><span class="line">&#125;);</span><br><span class="line">app.login(<span class="keyword">new</span> User(<span class="string">'John'</span>));</span><br><span class="line">app.introduceUser(<span class="function">(<span class="params">err, res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">return</span> <span class="built_in">console</span>.error(err);</span><br><span class="line">    <span class="built_in">console</span>.log(res);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>This useless piece of code simply illustrates the case where we have a class (Here <strong>App</strong> containing a member which may be null (<strong>user</strong>).</p>
+<p>I already hear functional programming geeks yelling at me, arguing that mutable values are bad and nullable ones are even worse.<br>The thing is, in practice there will always be a piece of stateful code with a nullable in there, and although you can avoid it with FP trickery, I want to show you that we can achieve the same amount of protection without sacrificing the ease and comfort we get out of nullables.</p>
+<p>OK, let’s get back to business, the above piece of code is bad for an obvious reason. Since <strong>user</strong> may be undefined, calling introduceUser may result in an error.</p>
+<h2 id="strictNullChecks"><a href="#strictNullChecks" class="headerlink" title="strictNullChecks"></a>strictNullChecks</h2><p>The first step is to turn on the strictNullChecks <a href="https://www.typescriptlang.org/docs/handbook/compiler-options.html" target="_blank" rel="noopener">compiler option</a> in the project’s tsconfig.json.<br>What this flag does is that it considers the <code>null</code> and <code>undefined</code> types as completely independent types and thus prevents accidental casting and/or calling methods on variables with those types.<br>It makes sense that this flag is off by default because TypeScript needs to be as close to JavaScript as possible to ease the learning curve. However, using TypeScript in production without –strictNullChecks is insane. Anytime a nullable value is used without any check <strong>is an error</strong>.</p>
+<p>Now, with the –strictNullChecks flag enabled, our code above won’t compile anymore, so we know we need to handle the case where user is null. The obvious way to do it is to add simple null checks.<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> App &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> renameUser(newName: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.user == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'No user is logged in!'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.user.name = newName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> introduceUser(cb: <span class="function">(<span class="params">err: <span class="built_in">string</span> | <span class="literal">null</span>, msg?: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.user == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> cb(<span class="string">'No user is logged in!'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.user.introduce(<span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">            cb(<span class="literal">null</span>, msg);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Note that since the method introduceUser is using a nodeJS-style asynchronous control flow, we need to call the callback with the error as the first parameter.</p>
+<p>The TypeScript compiler analyses the control flow and sees that, because of the newly added null check, the references to the user member are safe.</p>
+<p>This works in practice but has two downsides:<br>1. As your class grows, the number of null checks grows linearly. Each additional branch makes each method more <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity" target="_blank" rel="noopener">complex</a> and less readable.<br>2. We need to duplicate the error message which goes against the DRY principle. (even if we factor out the string itself, the string identifier will have to be duplicated anyway.)</p>
+<h2 id="Using-getters"><a href="#Using-getters" class="headerlink" title="Using getters"></a>Using getters</h2><p>Who said getters were only good for public interfaces? In this scenario we can actually use a getter to reduce the number of branches in our class and make the code more readable.<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> App &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> getUser(): User &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>.user) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'No user is logged in!'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.user;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> renameUser(newName: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.getUser().name = newName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> introduceUser(cb: <span class="function">(<span class="params">err: <span class="built_in">string</span> | <span class="literal">null</span>, msg?: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.getUser().introduce(<span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">            cb(<span class="literal">null</span>, msg);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>The getter allows us to factor-out the null-check and our public methods are readable again. If calling getUser() each time looks bad to your taste and you target ES5 or higher, you can actually rewrite the App class using an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get" target="_blank" rel="noopener">ES5 getter</a> like this:<br><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> App &#123;</span><br><span class="line">    _user?: User;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> login(user: User): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>._user = user;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">get</span> user(): User &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>._user) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'No user is logged in!'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>._user;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> renameUser(newName: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.user.name = newName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> introduceUser(cb: <span class="function">(<span class="params">err: <span class="built_in">string</span> | <span class="literal">null</span>, msg?: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.user.introduce(<span class="function">(<span class="params">msg</span>) =&gt;</span> &#123;</span><br><span class="line">            cb(<span class="literal">null</span>, msg);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>The most attentive reader might notice that we are back to square one: If the API consumer calls app.renameUser() or app.introduceUser() before logging in, they will get an exception! Even worse, our asynchronous control flow is broken because the callback will never be invoked with an error.</p>
+<p>We’ll talk about the asynchronous case in a minute, but first I need to mention one huge advantage this solution has over the initial version: The “unhappy” path is managed.</p>
+<p>Before, we relied on the JS engine to crash when the user variable was undefined. The API consumer would get something like “undefined has no member ‘name’”. Any JS dev knows how annoying it is to dig through dozens of stack trace frames to find out what was undefined and why. This kind of error is a legit software bug.<br>On the other hand, what we got now is an error that we are aware of. We know it may happen, we know why and we know what to do if it does happen. We can even show the error to the end user in the UI because “You are not authenticated” sounds better to end users than “Undefined is not a function”!!!</p>
+<p>This is the reason why –strictNullChecks is so important, it helps you, the programmer, avoid bugs. Your users might still get an error but you expect it and you can document it.</p>
+<h2 id="Making-it-airtight"><a href="#Making-it-airtight" class="headerlink" title="Making it airtight"></a>Making it airtight</h2><p>There is one last issue with the current solution: the asynchronous workflow. Indeed, while languages like Java have compile-time checks to prevent you from throwing exceptions where you shouldn’t, TypeScript doesn’t, and even if it did, you could still easily make a mess of your interface declarations.<br>TypeScript can only protect unchecked access to nullables in a synchronous workflow and that is why we have no other solution but to throw an Error in our getter.<br>By now you should know that whenever you have a problem with your asynchronous workflow, it’s because you are not using enough promises. Let’s see what promises can do for us in this case.</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> App &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> renameUser(newName: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.user.name = newName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> introduceUser(): <span class="built_in">Promise</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">resolve</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.user.introduce(<span class="function">(<span class="params">s</span>) =&gt;</span> resolve(s));</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> App();</span><br><span class="line">app.introduceUser().then(<span class="built_in">console</span>.log, <span class="built_in">console</span>.error);</span><br><span class="line">app.login(<span class="keyword">new</span> User(<span class="string">'John'</span>));</span><br><span class="line">app.introduceUser().then(<span class="built_in">console</span>.log, <span class="built_in">console</span>.error);</span><br></pre></td></tr></table></figure>
+<p><em>note: The promise API is <a href="https://caniuse.com/#search=promises" target="_blank" rel="noopener">available</a> in node and all major browsers, except IE</em></p>
+<p>When you wrap code in a promise like so, any exception emitted within the execution context of the promise is caught and used to reject the promise itself. Therefore, you get a consistent error handling mechanism where no exception may leak out.</p>
+<p>We now have:</p>
+<ul>
+<li>synchronous methods that return the result or throw an exception</li>
+<li>asynchronous methods that fullfill a promise or reject it with an error</li>
+<li>Readable code and managed errors</li>
+</ul>
+<p>As advertised in the introduction, we made our code better with no downside at all!</p>
+<h2 id="TL-DR-To-remember"><a href="#TL-DR-To-remember" class="headerlink" title="TL;DR / To remember"></a>TL;DR / To remember</h2><ul>
+<li>Always use the –strictNullChecks compiler option</li>
+<li><p>Dont be ashamed of nullable values, but if you do need one:</p>
+<ul>
+<li>Always access a nullable through a getter, even within the private context of a class</li>
+<li>Find the high level meaning of such a null value and throw a user-friendly error in the getter</li>
+<li>Wrap all async code in a promise and always write promise-based async APIs (no more node-style callbacks)<br>Check-out the <a href="https://gist.github.com/hmil/d4034d013dacb198992567cbe31150c5" target="_blank" rel="noopener">gist</a> of this guide if you prefer reading code.</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/" data-id="cjh6d84da001ml3yhx2s7omec" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/">TypeScript</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+  </nav>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

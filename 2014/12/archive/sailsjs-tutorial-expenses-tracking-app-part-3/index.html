@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>SailsJS tutorial &amp;#124; expenses tracking app (Part 3/4) | hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Previously in SailsJS tutorial:  We created a Sails app and added authentication with passport We added our styles and less without worrying about compilation and linking We implemented a basic layout">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SailsJS tutorial &amp;#124; expenses tracking app (Part 3&#x2F;4)">
+<meta property="og:url" content="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-3/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:description" content="Previously in SailsJS tutorial:  We created a Sails app and added authentication with passport We added our styles and less without worrying about compilation and linking We implemented a basic layout">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2018-04-23T18:02:59.726Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SailsJS tutorial &amp;#124; expenses tracking app (Part 3&#x2F;4)">
+<meta name="twitter:description" content="Previously in SailsJS tutorial:  We created a Sails app and added authentication with passport We added our styles and less without worrying about compilation and linking We implemented a basic layout">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-archive/sailsjs-tutorial-expenses-tracking-app-part-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-3/" class="article-date">
+  <time datetime="2014-12-10T08:50:36.000Z" itemprop="datePublished">2014-12-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/archived/">archived</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      SailsJS tutorial &amp;#124; expenses tracking app (Part 3/4)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="http://blog.hmil.fr/2014/12/sailsjs-tutorial-expenses-tracking-app-part-2" target="_blank" rel="noopener">Previously</a> in SailsJS tutorial:</p>
+<ul>
+<li>We created a Sails app and added authentication with passport</li>
+<li>We added our styles and less without worrying about compilation and linking</li>
+<li>We implemented a basic layout that shows the user’s login status<br>To be fair, the two last parts were actually pretty boring. But now comes the real fun: generating models and APIs. This is something Sails excels at and we’ll really feel like we are building something fast!</li>
+</ul>
+<h2 id="Generating-models-and-APIs"><a href="#Generating-models-and-APIs" class="headerlink" title="Generating models and APIs"></a>Generating models and APIs</h2><p>When we used <a href="https://www.npmjs.org/package/sails-generate-auth" target="_blank" rel="noopener">sails-generate-auth</a>, we already created a User model. Now the fundamental model for an expenditures tracking app is… guess what ? Expenditures!<br>They have the following attributes: </p>
+<ul>
+<li>an amount to see how much was spent</li>
+<li>a date to sort them chronologically</li>
+<li>the person who paid</li>
+<li>and a description to remember what it was for<br>Remember: we do not model money exchange, as in “Alice paid XX$ to Bob”. Instead we model individual losses and earnings like this : “Alice spent XX$. Bob earned XX$” (it takes two records instead of one). It looks cumbersome for a group of two but for larger groups it performs better because a user doesn’t need to keep track of his debts for each individual person. Instead there’s just one number to sum everything up.</li>
+</ul>
+<p>Anyway, let’s get back to our expenditures model. We will generate it using the command line tool<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sails generate api expenditure</span><br></pre></td></tr></table></figure></p>
+<p>This generates an empty Expenditure model and an empty ExpenditureController controller under <em>api/</em>.</p>
+<p>It may seem quite useless but there’s actually a lot going on already. To demonstrate this, let’s just <em>lift</em> the server. Navigate to localhost:1337/expenditure and you see an empty JSON array. Try browsing to /expenditure/create?amount=39&amp;description=foobar then get back to /expenditure. You just created a model!<br>You can update your model similarly by navigating to /expenditure/update/:id/? where <em>:id</em> is the id of your model and passing similar arguments as for create. You can destroy a model with <em>/expenditure/destroy/:id/</em><br>Play around with it a little to get familiar and come back when you are done.</p>
+<p><em>A quick note on security: these routes (/create, /update, /destroy) should <strong>never be used in production</strong>. They can be disabled by setting the property <em>shortcut: false</em> in <em>config/blueprints.js</em>. They are called shortcuts for it allows a developer to easily test his api but it is not meant to be used _by_ the app. The reason is, a crawler could find such url and visit it, thinking it will find a page but instead it will start messing with your data!</em></p>
+<p>The right way to use the api is by using the appropriate HTTP terms (GET, POST, PUT, DELETE) like you’d do with <a href="http://backbonejs.org/#Sync" target="_blank" rel="noopener">backbonejs</a>.<br>But, since sails is awesome, they built something special for you. If you go back to your homepage and open the web console, you see that Sails opens a websocket connection automatically. This socket can be used to perform queries. Instead of using classic HTTP queries, you can use io.socket.(get|post|put|delete). It has the same effect but <strong>acts through the socket.io connection!</strong><br>Try the following in your web console. It should create a model then display the list of expenditures and finally destroy the first one it finds:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">io.socket.post(<span class="string">'/expenditure'</span>, &#123;<span class="attr">amount</span>: <span class="number">42</span>, <span class="attr">description</span>: <span class="string">"bought the hitchhiker's guide"</span>&#125;, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  io.socket.get(<span class="string">'/expenditure'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">expenditures</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(expenditures);</span><br><span class="line">    io.socket.delete(<span class="string">'/expenditure/'</span>+expenditures[<span class="number">0</span>].id);</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>Great, we wrote nothing and have a fully working REST API. It does a lot of things including things we don’t want. The fun thing here is that building an API with Sails consists mostly in having it <em>not do what we don’t want it to do</em> rather than trying to make it do things.</p>
+<h2 id="The-API-under-control"><a href="#The-API-under-control" class="headerlink" title="The API under control!"></a>The API under control!</h2><p>Let’s begin by defining model attributes as well as their types. This way we will force our records to conform to some predefined schema.<br>In config/model.js, add the line <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">schema: <span class="literal">true</span></span><br><span class="line"><span class="string">``</span><span class="string">`. This tells sails that it must follow strictly the schemas we are about to define.</span></span><br><span class="line"><span class="string">Now in models/Expenditure.js, insert the following code to define the attributes we talked about earlier:</span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>javascript</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line"></span><br><span class="line">  attributes: &#123;</span><br><span class="line">    person    : &#123; </span><br><span class="line">      model: <span class="string">'user'</span>,</span><br><span class="line">      required: <span class="literal">true</span></span><br><span class="line">    &#125;,</span><br><span class="line">    amount    : &#123; </span><br><span class="line">      type: <span class="string">'integer'</span>, </span><br><span class="line">      required: <span class="literal">true</span> </span><br><span class="line">    &#125;,</span><br><span class="line">    date      : &#123; </span><br><span class="line">      type: <span class="string">'date'</span>, </span><br><span class="line">      required: <span class="literal">true</span></span><br><span class="line">    &#125;,</span><br><span class="line">    description: &#123; </span><br><span class="line">      type: <span class="string">'string'</span> </span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>Also we will want our Users to have a picture attribute. To do this, add a picture attribute of type string. Your User model should look like this:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">var</span> User = &#123;</span><br><span class="line">  <span class="comment">// Enforce model schema in the case of schemaless databases</span></span><br><span class="line">  schema: <span class="literal">true</span>,</span><br><span class="line"></span><br><span class="line">  attributes: &#123;</span><br><span class="line">    username  : &#123; <span class="attr">type</span>: <span class="string">'string'</span>, <span class="attr">unique</span>: <span class="literal">true</span> &#125;,</span><br><span class="line">    picture   : &#123; <span class="attr">type</span>: <span class="string">'string'</span> &#125;,</span><br><span class="line">    passports : &#123; <span class="attr">collection</span>: <span class="string">'Passport'</span>, <span class="attr">via</span>: <span class="string">'user'</span> &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p><em>Note that the ‘schema: true’ attribute is optional now that we defined it in the global configuration.</em></p>
+<p>Now you can restart the server and if you try to insert nonsense in the database, Sails won’t let you anymore.</p>
+<p>Next, we’ll add some policies such that only logged in users can access the expenditures API.</p>
+<p>In <em>api/policies/sessionAuth.js</em> replace the <em>req.session.authenticated</em> with <em>req.isAuthenticated()</em>. It should look like this now<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (req.isAuthenticated()) &#123;</span><br><span class="line">    <span class="keyword">return</span> next();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// User is not allowed</span></span><br><span class="line">  <span class="keyword">return</span> res.redirect(<span class="string">'/login'</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>We will also add a custom policy to check when a user owns an expenditure record.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// api/policies/ownsExpenditure.js</span></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!req.isAuthenticated()) &#123;</span><br><span class="line">    <span class="keyword">return</span> res.forbidden();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Expenditure.findOne(req.param(<span class="string">'id'</span>)).exec(<span class="function"><span class="keyword">function</span>(<span class="params">err, exp</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) next(err);</span><br><span class="line">    <span class="keyword">if</span> (req.user.id === exp.person) &#123;</span><br><span class="line">      <span class="keyword">return</span> next();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> res.forbidden();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>To apply these policies, open <em>config/policies.js</em> and define how policies should be applied like this:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/* ... */</span></span><br><span class="line">ExpenditureController: &#123;</span><br><span class="line">  <span class="string">'*'</span>:      [<span class="string">'passport'</span>, <span class="string">'ownsExpenditure'</span>],</span><br><span class="line">  <span class="string">'find'</span>:   [<span class="string">'passport'</span>, <span class="string">'sessionAuth'</span>],</span><br><span class="line">  <span class="string">'create'</span>: [<span class="string">'passport'</span>, <span class="string">'sessionAuth'</span>]</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* ... */</span></span><br></pre></td></tr></table></figure></p>
+<p>We allow <em>find</em> and <em>create</em> actions to anyone who is authenticated. Every other action can only be performed by someone who owns the target expenditure. Note that ownsExpenditure also checks that the user is authenticated so we don’t need to apply the <em>sessionAuth</em> policy in this case.</p>
+<p>All right, now our app is a little more secure. But we are still taking user input as is without doing any verification on it. We need to implement the create action ourselves, this way we can manipulate user input before it is saved to our DB. The following code does exactly what the automagic action was doing for us before but in addition it also cleans the user input before feeding it to the model. Take a few minutes to understand exactly what happens here:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// api/controllers/ExpenditureController.js</span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">  create: <span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Get only the attributes we want and apply defaults</span></span><br><span class="line">    <span class="keyword">var</span> data = &#123;</span><br><span class="line">      description: req.param(<span class="string">'description'</span>),</span><br><span class="line">      amount: req.param(<span class="string">'amount'</span>),</span><br><span class="line">      <span class="comment">// The user is taken directly from the request element. This is what</span></span><br><span class="line">      <span class="comment">// passport gives us and the user cannot easily spoof this information</span></span><br><span class="line">      person: req.user,</span><br><span class="line">      <span class="comment">// Parse the provided date or use current date if none is provided</span></span><br><span class="line">      date: req.param(<span class="string">'date'</span>) != <span class="literal">null</span> ? <span class="keyword">new</span> <span class="built_in">Date</span>(req.param(<span class="string">'date'</span>)) : <span class="keyword">new</span> <span class="built_in">Date</span>()</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Create new instance of model using data from params</span></span><br><span class="line">    Expenditure.create(data).exec(<span class="function"><span class="keyword">function</span>(<span class="params">err, data</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (err) <span class="keyword">return</span> next(err);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// The data field returned does not contain a fully populated</span></span><br><span class="line">      <span class="comment">// person attribute so we use the one at our disposal (req.user) to continue</span></span><br><span class="line">      <span class="keyword">var</span> expenditure = _.extend(data, &#123;<span class="attr">person</span>: req.user&#125;);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// You can always use this boolean to check if the request was issued on a</span></span><br><span class="line">      <span class="comment">// socket or standard HTTP request</span></span><br><span class="line">      <span class="keyword">if</span> (req.isSocket) &#123;</span><br><span class="line">        <span class="comment">// Subscribe the current socket</span></span><br><span class="line">        Expenditure.subscribe(req, expenditure);</span><br><span class="line">        <span class="comment">// Introduce all class listeners to this instance</span></span><br><span class="line">        Expenditure.introduce(expenditure);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Tell everyone listening that a model was created</span></span><br><span class="line">      Expenditure.publishCreate(expenditure, req);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// (HTTP 201: Created)</span></span><br><span class="line">      res.status(<span class="number">201</span>).send(expenditure.toJSON());</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure></p>
+<p>Now when a user is logged in and sends a request to create an expenditure, the model gets properly populated with the right ‘person’ attribute. </p>
+<p>Your API is now complete! The last thing we are left with is implementing a front-end and we’ll be done. You may have noticed though that we did not override the update method. Therefore someone could still insert stupid data in our database. As an exercise, you can try implementing the update method such that it filters user input before inserting it in the database. You could start from the <a href="https://github.com/balderdashy/sails/blob/master/lib/hooks/blueprints/actions/update.js" target="_blank" rel="noopener">blueprint implementation</a>. It contains many comments and it is a good way to learn more about sails and how it works.</p>
+<p><a href="http://blog.hmil.fr/2014/12/sailsjs-tutorial-expenses-tracking-app-part-4" target="_blank" rel="noopener"><strong>In the next part</strong></a>, we’ll write a front-end for our sailsjs app.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-3/" data-id="cjh6d84df001vl3yhvgqkrnmu" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-3/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-4/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          SailsJS tutorial &amp;#124; expenses tracking app (Part 4/4)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SailsJS tutorial &amp;#124; expenses tracking app (Part 2/4)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  var disqus_url = 'https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-3/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

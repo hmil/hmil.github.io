@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>TypeScript project structure - Chapter 2 | hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TypeScript project structure - Chapter 2">
+<meta property="og:url" content="https://hmil.github.io/2018/05/TypeScript-project-structure2/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2018-05-14T14:48:57.597Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TypeScript project structure - Chapter 2">
+<meta name="twitter:description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-TypeScript-project-structure2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/TypeScript-project-structure2/" class="article-date">
+  <time datetime="2018-05-14T15:00:00.000Z" itemprop="datePublished">2018-05-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      TypeScript project structure - Chapter 2
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="https://blog.hmil.fr/2018/03/TypeScript-project-structure/" target="_blank" rel="noopener">previous part</a>, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages. Which is what we will cover in this chapter.</p>
+<h2 id="To-follow-along"><a href="#To-follow-along" class="headerlink" title="To follow along"></a>To follow along</h2><p>As in the previous part, I have created a simple repository which you can use to follow along this tutorial. This time however, you must first run a script to customize the project before you can start using the repository. The reason is that at the end of this tutorial, you will be able to publish your project to npm. In order to make this work for everyone, we have to rename the packages with a prefix which is unique to each reader of this tutorial. Don’t worry, it only takes a second:</p>
+<ol>
+<li>Download the archive <a href="https://github.com/hmil/ts-seed-project/archive/part2.zip" target="_blank" rel="noopener">for part 2</a>, and unzip it somewhere.</li>
+<li>If you haven’t already, <a href="https://www.npmjs.com/signup" target="_blank" rel="noopener">sign up</a> to npm and <a href="https://docs.npmjs.com/cli/adduser" target="_blank" rel="noopener">log in</a> using the command line. Or, if you don’t care about publishing to npm, go straight to <em>4</em>.</li>
+<li>In the project, run <code>./customize.sh</code></li>
+<li>Otherwise, run the script like so: <code>./customize.sh username</code>, where <em>username</em> is any username you picked. Beware that you will not be able to publish the packages. </li>
+</ol>
+<p>Alternatively, if you do not wish to download the files, you can read the <a href="https://github.com/hmil/ts-seed-project/compare/part1...part2" target="_blank" rel="noopener">diff on github</a>.</p>
+<h2 id="Build-system"><a href="#Build-system" class="headerlink" title="Build system"></a>Build system</h2><p>You may have noticed a new file called <code>Makefile</code> at the top of the project. Indeed, we use <a href="https://www.gnu.org/software/make/" target="_blank" rel="noopener">GNU Make</a> to keep track of dependencies between packages and to define build tasks, and this file is where we tell <em>Make</em> what to do. If you do happen to know a better alternative than <em>Make</em>, please express yourself in the comments.</p>
+<p><em>Make</em> is installed by default on any decent operating system. If you are using windows, you can easily find instructions online to install it.  </p>
+<p>The top-level Makefile defines three things: </p>
+<ul>
+<li>global tasks</li>
+<li>dependencies</li>
+<li>utility tasks</li>
+</ul>
+<h3 id="Global-tasks"><a href="#Global-tasks" class="headerlink" title="Global tasks"></a>Global tasks</h3><p>Global tasks are tasks which must run in all packages. They are defined in this line:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TASKS=build clean test</span><br></pre></td></tr></table></figure>
+<p>For instance, the <code>build</code> task will build all packages at once. To run it, type:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make build</span><br></pre></td></tr></table></figure>
+<p>You will notice that this command also installs npm dependencies, and that it builds the packages in the correct order! Make did not <em>magically</em> figure this out, <em>we</em> instructed it to do so. Keep reading to find out how.</p>
+<h3 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h3><p>Dependency declaration is probably the easiest thing to do in make. Simply write the path to the dependent, followed by a colon, followed by a space-separated list of dependencies.<br>For instance, the dependencies between our packages are defined like so:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">packages/tstuto-api:</span></span><br><span class="line"><span class="section">packages/tstuto-server: packages/tstuto-api</span></span><br><span class="line"><span class="section">packages/tstuto-web-client: packages/tstuto-api</span></span><br></pre></td></tr></table></figure>
+<p>This is how Make knows in which order to build our packages. But how does it know to install npm dependencies first?</p>
+<p>Open the Makefile in <code>tstuto-web-client</code>, which looks something like this:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">BIN=public/dist/main.js</span><br><span class="line">SRC =<span class="variable">$(<span class="built_in">shell</span> find src/ -type f -name '*.ts')</span></span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: build</span></span><br><span class="line"><span class="section">build: <span class="variable">$(BIN)</span></span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(BIN)</span>: package-lock.json <span class="variable">$(SRC)</span></span><br><span class="line">	npm run build</span><br><span class="line"></span><br><span class="line"><span class="section">package-lock.json: package.json</span></span><br><span class="line">	npm install</span><br><span class="line">	<span class="comment"># We "touch" package-lock.json to make sure it was last modified after package.json</span></span><br><span class="line">	touch package-lock.json</span><br></pre></td></tr></table></figure>
+<p>The <code>BIN</code> variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle). We define a dependency between this file and <code>package-lock.json</code>, the file which npm uses to keep track of what needs to be installed in <code>node_modules</code>. We then let Make know that it should run <code>npm install</code> whenever <code>package.json</code> has changed. <strong>This means that Make will run npm install when it needs to!</strong></p>
+<h3 id="Utility-tasks"><a href="#Utility-tasks" class="headerlink" title="Utility tasks"></a>Utility tasks</h3><p>Let’s go back to the top-level Makefile quickly to talk about utility tasks.</p>
+<p>You might encounter repetitive tasks which are specific to one package and cannot be generalized to all packages. For instance, we want a task to start our development server. Such tasks can be defined individually in the top-level Makefile like so:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: serve</span></span><br><span class="line"><span class="section">serve:</span></span><br><span class="line">	<span class="variable">$(MAKE)</span> build</span><br><span class="line">	<span class="variable">$(MAKE)</span> -C packages/tstuto-server serve</span><br></pre></td></tr></table></figure>
+<p>Here we simply create a proxy-task which delegates to the makefile located in <code>packages/tstuto-server</code>. </p>
+<!-- You may be wondering why this task explicitly invokes `make build` instead of defining a dependency on `build`. That is where we reach the limits of Make. Simply put, we cannot depend on global tasks because we used a hack to declare them. The hack itself is at the end of the Makefile but it is not worth discussing in this tutorial.
+-->
+<hr>
+<p>That is about it for the build system. If you are familiar with Make, nothing should have surprised you in the above (except maybe the way we declare the dependencies for <code>npm install</code>). Otherwise, the syntax might look daunting at first, but you’ll quickly get used to it.</p>
+<p>Without further ado, let’s see how we solve the last remaining problem: <strong>publishing</strong>.</p>
+<h2 id="Publishing-Deployment"><a href="#Publishing-Deployment" class="headerlink" title="Publishing/Deployment"></a>Publishing/Deployment</h2><p>The setup we have right now is great for development, but you may be wondering: “How do I deploy this to production?” or “How do I publish this as npm packages?”. Fear not, the answer lies right below!</p>
+<p>You could of course clone your whole repository to your production environment and run <code>make serve</code>. That would work but it would also be quite unprofessional to proceed this way.</p>
+<p>A more idiomatic way to proceed is to publish your packages to an artifact repository. Open source projects usually rely on npm’s public repository while proprietary software editors have their own private artifact servers. Luckily for us, this means that no matter what you are currently trying to do, whether it’s an open or closed source, whether it’s a library, a microservice or a CLI tool, the process to publish it is exactly the same!</p>
+<p>Let’s recap what we want to do before digging into the details: We want to take all of our packages, give them appropriate version numbers and publish them using npm. Also, in the development setup, sibling packages don’t explicitly declare their dependencies on each other. We need to do this in order to avoid a confusion between the local packages and those npm would try to install. However, before releasing a package, we must add these dependencies.</p>
+<p>All the magic happens inside <code>tools/publish.ts</code>. This script does the following:</p>
+<ul>
+<li>Determines the next version number</li>
+<li>Changes all <code>package.json</code> files of all packages to set the correct version number</li>
+<li>Adds the missing dependencies to each <code>package.json</code></li>
+<li>Performs a <code>npm publish</code></li>
+<li>Rolls back the changes made in the <code>package.json</code> files</li>
+</ul>
+<p>I will not dive into the details of this script and I would not advise you to reuse it as-is for your own projects. Instead, you should try it out and understand how it works so you can apply this knowledge to your specific use-case.<br>We call this file from the <code>Makefile</code>, this way we can leverage the build system to run a build and test the packages before performing a release. I will not dig into the details of this script but I invite you to take a look at it by yourself. You can try it out by running:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make publish</span><br></pre></td></tr></table></figure>
+<p><strong>If you are currently logged into npm, this will effectively publish the demo package to <code>@username/tstuto-xxx</code>.</strong></p>
+<p>You can now test your newly-deployed package by running:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g @username/tstuto-server</span><br></pre></td></tr></table></figure>
+<p>(Make sure to replace <em>username</em> with your actual npm username. You may need to run it with <code>sudo</code> depending on your setup).</p>
+<p>And then, start your server by running:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">my-awesome-app</span><br></pre></td></tr></table></figure>
+<p>This should start the application.</p>
+<hr>
+<p>Well done! If you made it so far, you now know the key elements to manage a multi-package TypeScript project, develop it and publish it (or ship it for production).</p>
+<h2 id="Bonus"><a href="#Bonus" class="headerlink" title="Bonus"></a>Bonus</h2><p><code>Make</code> can run multiple tasks in parallel in a way that is consistent with the dependencies declared in the makefile. For instance, to run up to 4 tasks in parallel, run <code>make -j4 build</code>. This can help you speed up builds with many packages when the dependency tree isn’t too deep.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2018/05/TypeScript-project-structure2/" data-id="cjh6d84c80009l3yhg4mccvb9" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2018/05/TypeScript-project-structure2/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/03/TypeScript-project-structure/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">TypeScript sanity: the proper way to structure large projects</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  var disqus_url = 'https://hmil.github.io/2018/05/TypeScript-project-structure2/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

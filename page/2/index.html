@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="hmil&#39;s blog">
+<meta property="og:url" content="https://hmil.github.io/page/2/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hmil&#39;s blog">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-archive/you-should-worry-about-vary" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/10/archive/you-should-worry-about-vary/" class="article-date">
+  <time datetime="2016-10-16T01:49:15.000Z" itemprop="datePublished">2016-10-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/hacking/">hacking</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>We’ve all heard of XSS, SQLi and CSRF. And although they keep occurring all the time, any decent web framework nowadays has some mechanisms to avoid those. Now did you know CSRF had a little sister? It is so poorly known that it seems like it doesn’t even have its own name! Before explaining how it works, let’s see what it can do.</p>
+<h1 id="Some-background"><a href="#Some-background" class="headerlink" title="Some background"></a>Some background</h1><p>Meet Bob, a web dev who is in charge of writing a public facing API. Bob sets the Access-Control-Allow-Origin header to allow all origin domains. Indeed, Bob wants any website to be able to talk to his API. Now, being a thoughtful developer, Bob knows about <a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet" target="_blank" rel="noopener">CSRF</a> and he builds an authentication mechanism that delivers access tokens. Without a proper access token, his API won’t talk!</p>
+<p>Still following? Good, now you may be wondering what this API does. In fact this API allows different services to store and share credentials in the cloud. The way a service gets the credentials is by issuing a request like this one:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /vault/&#123;account&#125;/&#123;service&#125;</span><br><span class="line">Authorization: Basic QWxhZGRpbjpPcGVuU2VzYW1l</span><br></pre></td></tr></table></figure></p>
+<p>Bob heard one day that Auth basic is unbreakable, therefore he is using this method to pass the API key and username.<br>But the backend is doing some crypto stuff and hence requesting the credentials is an expensive operation. Bob adds some Cache-Control information to tell the browser to cache the response for a little bit. This way Bob reduces the load on his server and improves the speed of apps consuming his API.<br>If the credentials check out, the API returns something like this:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">200 OK</span><br><span class="line">Access-Control-Allow-Origin: *</span><br><span class="line">Access-Control-Allow-Headers: Authorization</span><br><span class="line">Cache-Control: no-transform, max-age=600</span><br><span class="line">Content-Length: 42</span><br><span class="line">Content-Type: application/json</span><br><span class="line"></span><br><span class="line">&#123;&quot;username&quot;:&quot;Alice&quot;,&quot;password&quot;:&quot;I4mab055&quot;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Everything works fine until one day, a client complains that her credentials got stolen…<br>Damn it Bob, again?!</p>
+<h1 id="You-just-got-hit"><a href="#You-just-got-hit" class="headerlink" title="You just got hit"></a>You just got hit</h1><p>Bob can check his server log for a while, he will never find anything. The attacker left no evidence behind because he <strong>never even had to talk to Bob’s API</strong>; Everything happened locally, in Alice’s browser. Alice received this stupid email a few days ago and couldn’t resist opening a link to a picture of a <a href="https://i.reddituploads.com/3a16089469a04fe2bec7c3666b3bf169?fit=max&amp;h=1536&amp;w=1536&amp;s=6160f4d2e6b39bb1c1684416878ec2dc" target="_blank" rel="noopener">cat wearing a ninja-turtle mask</a>.<br>While she was watching this picture, a piece of javascript issued an HTTP request in the background to Bob’s API and stole her credentials. But how did the malicious website get an API token in the first place you’ll ask? Well it didn’t. Because it never had to. <strong>A simple request without the Authorization header was enough to get the information.</strong></p>
+<h1 id="Introducing-Vary"><a href="#Introducing-Vary" class="headerlink" title="Introducing: Vary"></a>Introducing: Vary</h1><p>So there’s this thing in the HTTP spec that you may or may not have heard about. It’s called the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary" target="_blank" rel="noopener">Vary</a> header. What it does is inform any cache about which request headers can cause the response to change. <strong>If the Vary header is omitted, then caches will disregard the request headers when deciding whether to serve the response from cache.</strong> In other words, no matter which headers were sent by the client the first time, the response will be cached and served back to every subsequent request until the response expires, regardless of the next request’s headers. Remember how Bob made the response cacheable for 10 minutes? This means that the attack is successful if it happens within 10 minutes of the original request.</p>
+<p>To prevent this issue, the API should send the <em>Vary</em> header in its responses to inform caches that the response will be different for different values of the <em>Authorization</em> header. In our example we get:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">200 OK</span><br><span class="line">Access-Control-Allow-Origin: *</span><br><span class="line">Access-Control-Allow-Headers: Authorization</span><br><span class="line">Cache-Control: no-transform, max-age=600</span><br><span class="line">Content-Length: 42</span><br><span class="line">Content-Type: application/json</span><br><span class="line">**Vary: Authorization**</span><br><span class="line"></span><br><span class="line">&#123;&quot;username&quot;:&quot;Alice&quot;,&quot;password&quot;:&quot;I4mab055&quot;&#125;</span><br></pre></td></tr></table></figure></p>
+<h1 id="Going-beyond"><a href="#Going-beyond" class="headerlink" title="Going beyond"></a>Going beyond</h1><p>So stealing information is fun but let’s see if we can use this flaw to do something better. Imagine a web page that allows a user to set a message of the day, stores it in the cookies and displays it whenever the user visits the page for the rest of the day. The page is cached and can be fetched cross-domain just like in the previous example and it doesn’t have <em>Vary: Cookie</em>. If a user visits my website, I could issue a request to the greetings page with a custom Cookie. If I manage to perform this request when the page is not in cache yet, then the browser will fetch the page with my custom cookie and store it. Yes, we just found ourselves a cache-poisoning vulnerability. Now guess what happens next if this page allows the greeting message to contain javascript?</p>
+<p>Depending on the cache headers, it may even be possible that the response gets cached on a server sitting between the victim and the origin. In this situation the attacker can read the victim’s data without even running code in her browser! All that is required is a hit on the cache server.</p>
+<h1 id="Wrapping-up"><a href="#Wrapping-up" class="headerlink" title="Wrapping up"></a>Wrapping up</h1><p>I wish this article will at least allow a few people to get awareness about the dangers associated with Cache-Control and the Vary header. This vulnerability is similar to CSRF in that it allows cross domain requests to do some damage. It is harder to exploit and does not allow to reach the server. This however makes it impossible to detect attacks while still allowing some information leakage and defacing. In the case of cache poisoning, it opens up the attacks surface to find other vulnerabilities such as XSS or even SQL injections.</p>
+<p>The fact that this vulnerability lies in the shadow of the big names like XSS makes it more likely to be looked over. In fact it <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-1418" target="_blank" rel="noopener">has occurred before</a> and I bet there are exploitable scenarios in the wild like those discussed above. So be careful next time you build an API and take some time to review your response headers. It can sometimes be trickier than you’d think figuring out which headers make the response change!</p>
+<p>You may want to try out <a href="https://github.com/hmil/invariable-leak" target="_blank" rel="noopener">this quick and dirty proof of concept</a> to see this flaw in action.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2016/10/archive/you-should-worry-about-vary/" data-id="cjh6d84di001yl3yhkz9dd32y" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2016/10/archive/you-should-worry-about-vary/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-archive/githubs-merge-pull-request-is-wrong" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/" class="article-date">
+  <time datetime="2015-11-21T13:49:06.000Z" itemprop="datePublished">2015-11-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/software-engineering/">software engineering</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>This is the story of Bob. Bob is working on some cool project on github. He’s written tests and runs them continuously on <a href="https://travis-ci.org" target="_blank" rel="noopener">travis</a>. Bob asks his contributors to write tests for new features they introduce. Using GitHub’s pull requests, he can make sure no bugs are introduced by looking for the green tick next to the commit number. If you look at the commit tree in Bob’s repository, you’ll probably find something like <a href="http://nvie.com/posts/a-successful-git-branching-model/" target="_blank" rel="noopener">this</a>.</p>
+<p>Bob states in his contribution guide that people can fork <em>master</em> to work on new features. He guarantees that master’s tests always pass and therefore, individual contributors don’t need to worry that much about errors made by other developers.</p>
+<p>If you’re familiar with github then you are probably familiar with this workflow and you’ll think that it’s perfectly reasonable.</p>
+<p>But you’ll be wrong. Bob got overly enthusiastic about github’s UI and will soon discover that <strong>he’s been wrong all this time</strong>.</p>
+<h2 id="A-catastrophic-scenario"><a href="#A-catastrophic-scenario" class="headerlink" title="A catastrophic scenario"></a>A catastrophic scenario</h2><p>Say two contributors, Alice and Charlie, are writing code for Bob’s project in their respective branches. In this project, we find the following code for operating Bob’s car:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(String action)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">"OPEN_DOOR"</span>:</span><br><span class="line">       open_door();</span><br><span class="line">       <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Now Alice thinks it would be better if Bob used an <strong>enum</strong> instead of a string. She changes the function to the following and opens a pull request on Bob’s project.<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(Action action)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">    <span class="keyword">case</span> Action.OPEN_DOOR:</span><br><span class="line">       open_door();</span><br><span class="line">       <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Bob opens his project page and sees a pull request. He thinks Alice’s modification makes sense and, since all tests passed, he clicks on <em>the green button</em>.</p>
+<p>[caption id=”attachment_221” align=”alignnone” width=”776”]<a href="/assets/archive/2015/11/button_of_doom.png"><img src="/assets/archive/2015/11/button_of_doom.png" alt="The button of doom"></a> The button of doom[/caption]</p>
+<p>Meanwhile, Charlie thinks Bob will need to close his car’s door at some point. Charlie adds a new case to the switch:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(String action)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">"OPEN_DOOR"</span>:</span><br><span class="line">       open_door();</span><br><span class="line">       <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">"CLOSE_DOOR"</span>:</span><br><span class="line">       close_door();</span><br><span class="line">       <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The next day, Bob opens his project on GitHub and sees Charlie’s pull request. All tests passed, no merge conflict, that’s a clear <acronym title="Looks Good To Me">LGTM</acronym> and Bob merges the code.</p>
+<p>A few days later, Bob receives complaints from multiple developers, they forked master and it doesn’t build!</p>
+<h2 id="What-could-go-wrong"><a href="#What-could-go-wrong" class="headerlink" title="What could go wrong?"></a>What could go wrong?</h2><p>The problem lies in a common misunderstanding of the following assumptions. </p>
+<ul>
+<li>Different PRs must be completely independent</li>
+<li>No merge conflicts &ne; No conflicts</li>
+</ul>
+<p>If you accept one of these to be violated, then expect your main branch to fail tests!</p>
+<p>If we speak in terms of diff, then Alice’s diff is the following:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(String action)</span> </span>&#123;</span><br><span class="line">+ <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(Action action)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">-     <span class="keyword">case</span> <span class="string">"OPEN_DOOR"</span>:</span><br><span class="line">+     <span class="keyword">case</span> Action.OPEN_DOOR:</span><br><span class="line">         open_door();</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>While Bob’s diff looks like this:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">...</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">+     <span class="keyword">case</span> <span class="string">"CLOSE_DOOR"</span>:</span><br><span class="line">+        close_door();</span><br><span class="line">+        <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>Put together we get<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(String action)</span> </span>&#123;</span><br><span class="line">+ <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(Action action)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (action) &#123;</span><br><span class="line">-     <span class="keyword">case</span> <span class="string">"OPEN_DOOR"</span>:</span><br><span class="line">+     <span class="keyword">case</span> Action.OPEN_DOOR:</span><br><span class="line">         open_door();</span><br><span class="line">         <span class="keyword">break</span>;</span><br><span class="line">+     <span class="keyword">case</span> <span class="string">"CLOSE_DOOR"</span>:</span><br><span class="line">+        close_door();</span><br><span class="line">+        <span class="keyword">break</span>;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>This diff <strong>does not cause a merge conflict</strong> but it is actually in conflict!</p>
+<h2 id="–no-ff-and-the-button-of-doom"><a href="#–no-ff-and-the-button-of-doom" class="headerlink" title="–no-ff and the button of doom"></a>–no-ff and the button of doom</h2><p>The flaw resides in that big old “merge pull request” button. While the green checks above the button and its fat style make pressing it a rewarding thing, it hides the real danger behind it: a blind merge!</p>
+<p>The above example looks like this in terms of commit history:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">       +-PR_Charlie-+</span><br><span class="line">      /              \</span><br><span class="line">     +--PR_Alice--+   \</span><br><span class="line">    /              \   \</span><br><span class="line">---+----------------x---x</span><br><span class="line">                        |</span><br><span class="line">                       master</span><br></pre></td></tr></table></figure></p>
+<p>All changes introduced by Alice and Charlie on their respective PRs have been tested, but the merge commits (marked ‘x’ above) were not! This is called a “non fast-forward” merge (–no-ff in git) and is basically like committing directly on master.</p>
+<h2 id="The-right-way-to-do-it"><a href="#The-right-way-to-do-it" class="headerlink" title="The right way to do it"></a>The right way to do it</h2><p>Assuming you are like Bob and want your main branch to always pass tests, then here is the right way to do this: Merge master into the PR fisrt, and merge only when fast forward. It would look like that:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">Initial state: both PRs are unmerged:</span><br><span class="line"></span><br><span class="line">        +-PR_Charlie-+</span><br><span class="line">       /              </span><br><span class="line">      +--PR_Alice--+  </span><br><span class="line">     /                 </span><br><span class="line"> ---+</span><br><span class="line">    |</span><br><span class="line">  master</span><br><span class="line"></span><br><span class="line">on master: git merge --ff-only PR_Alice</span><br><span class="line"></span><br><span class="line">      +-PR_Charlie-+</span><br><span class="line">     /                              </span><br><span class="line"> ---+--PR_Alice--+</span><br><span class="line">                 |</span><br><span class="line">               master</span><br><span class="line"></span><br><span class="line">on PR_Charlie: git merge master</span><br><span class="line"></span><br><span class="line">                  merge branch master into PR_Charlie   </span><br><span class="line">                     |</span><br><span class="line">      +-PR_Charlie-+-+</span><br><span class="line">     /              /                  </span><br><span class="line"> ---+--PR_Alice----+</span><br><span class="line">                   |</span><br><span class="line">                 master</span><br><span class="line"></span><br><span class="line">Then on master: git merge --ff-only PR_Charlie</span><br><span class="line"></span><br><span class="line">      +-PR_Charlie-+</span><br><span class="line">     /              \                  </span><br><span class="line"> ---+--PR_Alice----+-+</span><br><span class="line">                     |</span><br><span class="line">                   master</span><br></pre></td></tr></table></figure>
+<p>The end result is exactly the same as before EXCEPT that master was merged into the PR first, and this (if properly pushed to github) allows the automated tools to test the last commit. This ensures that master builds because master will always be on a commit that has been tested before.</p>
+<p>Many beginner (and even advanced) programmers get fooled into thinking that merging a green pull request cannot harm. In an ideal world, clicking the green button would: merge master into the branch, wait for the tests to pass, and on success, fast-forward master to the merge commit. But unfortunately I don’t think this is coming anytime soon. In the meantime, think about it twice before you press the <em>button of doom</em>. And when in doubt, run the merge sequence manually in the right order. This may save you a few hours of debugging.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2015/11/archive/githubs-merge-pull-request-is-wrong/" data-id="cjh6d84dd001ql3yhbde31qvl" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2015/11/archive/githubs-merge-pull-request-is-wrong/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/github/">github</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-00-hacking-funrun2-how-to-reverse-engineer-a-corona-app" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/" class="article-date">
+  <time datetime="2015-02-13T16:27:12.000Z" itemprop="datePublished">2015-02-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/hacking/">hacking</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/">Hacking FunRun2 — how to reverse engineer a Corona app</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>Disclaimer:</strong> This article is a bit old and does not apply to recent versions of the corona sdk. It is put here <strong>for educational purpose</strong>, showing how one may try to break into this kind of applications. <strong>It is not a magic formula for hacking all corona apps across all versions of the sdk.</strong></p>
+<p><a href="/assets/archive/2015/02/2015-02-13-17-38-04.jpg"><img src="/assets/archive/2015/02/2015-02-13-17-38-04.jpg" alt="funrun2 hack"></a></p>
+<p>If you haven’t played funrun yet, you probably will soon. Funrun2 is one of the best multiplayer mobile games out there. It’s one of these rare games where you can have all the fun from the very first game you play, but still stays enjoyable after month of playing it. It’s my favorite game on mobile and since I had some spare time, I decided to tear it open (yeah, that’s what I do to things I like). It was a bit harder than expected and involves some not so trivial hacking as well as a bit of luck. By the way, yes, all these buttons work.</p>
+<h2 id="The-easy-part"><a href="#The-easy-part" class="headerlink" title="The easy part"></a>The easy part</h2><p>First I need to get my hands on the <em>.apk</em> file. There’s plenty of tools out there to do that, some of them are even <a href="https://github.com/Lekensteyn/apk-downloader" target="_blank" rel="noopener">open source</a>.</p>
+<p>An apk file is an archive, just like a jar or a zip so I can unpack it with regular unzipping tools. This gives me access to a <a href="http://en.wikipedia.org/wiki/Android_application_package" target="_blank" rel="noopener">well documented</a> directory structure. The two things I want are the <em>classes.dex</em> file, containing java bytecode, and the assets directory. Reversing the first one allows me to get access to java source code so it’s pretty obvious why I want to look at it.<br>To understand why the second one is interesting though, you must consider that this game was built with a cross platform framework, namely corona. These kind of framework generally allow you to code your app with some scripting language that gets executed on every platform the same way. Therefore, unless the script is cross compiled to native language (which nobody ever does), it must be stored somewhere. That’s when the assets folder comes to play. It contains only a few images and this <em>resource.car</em> file which extension conveniently matches Corona <em>ARchive</em>. How cool is that ?<br>I open the file in a text editor and mostly get binary-unreadable-shit but there’s also strings like “lua.whatever.that.is.lu”. There are the scripts.<br><em>In case you don’t know: <a href="http://www.lua.org/" target="_blank" rel="noopener">lua</a> is one of the main scripting languages used in games with it’s open-source libraries and tools.</em></p>
+<p>Now I still haven’t figured out where the images and sounds are (the corona archive weights a mere 2MB so it doesn’t contain any asset), but this will come later.</p>
+<h2 id="Things-getting-interesting"><a href="#Things-getting-interesting" class="headerlink" title="Things getting interesting"></a>Things getting interesting</h2><p>Trying to open the corona archive, I quickly realize it’s not a common archive format (even 7-zip can’t open it !). So there are two ways to go: finding the loading procedure in the java code or analyzing the file structure by hand. The first seems more reasonable.<br>But first, let’s decompile the dalvik bytecode into human readable java. These tools are helpful: <a href="https://code.google.com/p/dex2jar/" target="_blank" rel="noopener">dex2jar</a> to covert the <em>.dex</em> to <em>.class</em> (<a href="http://en.wikipedia.org/wiki/Dalvik_%28software%29" target="_blank" rel="noopener">dalvik</a> to <a href="http://en.wikipedia.org/wiki/Java_virtual_machine" target="_blank" rel="noopener">jvm</a>) and <a href="http://jd.benow.ca/" target="_blank" rel="noopener">jd</a> to go back to plain java source code.</p>
+<p>Now I have a load of java source code to look into, great! Let’s look for the string “resource.car”: no results. Looking manually, I quickly find corona’s source code in com/ansca/corona, that’s where the magic must happen. However, nothing is nearly dealing with a “resource” nor a “.car” file. I find however references to images. They were actually located on the device’s external storage (sdcard/Android/obb) in a <em>.obb</em> file. This is something common on android devices (that I wasn’t aware of before doing this hack), my guess is that moving resources allows the apk to be lighter and makes the internal memory footprint smaller. A <em>.obb</em> file is just a zip with a fancy extension. I can grab this file on a computer, edit the images/sounds/whatever and put it back in place. The game still runs with my custom images.</p>
+<p>[caption id=”attachment_177” align=”aligncenter” width=”700”]<a href="/assets/archive/2015/02/2015-02-13-17-54-08.jpg"><img src="/assets/archive/2015/02/2015-02-13-17-54-08.jpg" alt="funrun_image"></a> Besides adding childish drawings to the game, there’s not much that can be done this way.[/caption]</p>
+<p>I’m in a dead-end with the java code. Let’s give a shot at manually reversing the resource.car file:</p>
+<p>I open it with a hex editor and quickly realize the format used is trivial:</p>
+<p>First, a header <del>to rule them all</del>, then comes an index made of each file name + position (address) of it’s contents in the archive, then comes the data block with each file contents.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[header] 16 bytes</span><br><span class="line"></span><br><span class="line">[index]</span><br><span class="line">  [entry]</span><br><span class="line">   [header] (4 bytes) 1</span><br><span class="line">   [block addr] (4 bytes)</span><br><span class="line">   [nameS] (4 bytes)</span><br><span class="line">   [name] (nameS+1 bytes) 0-terminated</span><br><span class="line">   [padding] (0s to complete 4x addr)</span><br><span class="line"></span><br><span class="line">[files]</span><br><span class="line">  [entry]</span><br><span class="line">    [header] (4 bytes) 2</span><br><span class="line">    [??] (4 bytes)</span><br><span class="line">    [size] (4 bytes)</span><br><span class="line">    [file] (no 0 termination)</span><br><span class="line">    [padding] (to next 4x addr)</span><br></pre></td></tr></table></figure></p>
+<p><em>The resource.car file format</em></p>
+<p>Now I didn’t have to code a packer for this format myself because luckily, someone already did that. So I grabbed this <em>corona archive packer/unpacker</em> which you won’t find a link to on my blog.</p>
+<p>It turns out the archive contains uncompressed precompiled lua scripts, using luadec and then luac again you can decompile and then recompile these scripts which is very convenient. These lua scripts define absolutely every aspect of the game. From where a button might be to how fast a player can move and what a specific powerup does.<br>Injecting our custom resource.car in the app is a big deal because I could modify anything in the game.</p>
+<p>First I try modifying something inside the precompiled lua scripts, such as a string since we can easily recognize them. If this works, I can later try to recompile one file from the (modified) source.<br>I repack the resource and put it back in the apk file, sign it with dex2jar (as explained <a href="https://code.google.com/p/dex2jar/wiki/ModifyApkWithDexTool" target="_blank" rel="noopener">here</a>) and install it on my device. I launch the game and, with no real surprise, it crashes.</p>
+<p>I figured there’s probably some kind of check performed against the archive to guarantee integrity. However, the loader is nowhere to be found in the java source. This battle is lost but not the war.</p>
+<h2 id="Going-down"><a href="#Going-down" class="headerlink" title="Going down"></a>Going down</h2><p><a href="/assets/archive/2015/02/a88.jpg"><img src="/assets/archive/2015/02/a88.jpg" alt="a88"></a></p>
+<p>Yeah, maybe Di Caprio is right, we need to go low-level and find this resource loading procedure.<br>Inside the .apk, there’s another directory called “lib”. It contains architecture-specific libraries. You’d usually build a native library either when you have no choice but use C (for instance, lua is written in C) or when you want higher-than-java performances (for a game framework, it makes sense).</p>
+<p>In this lib folder, there’s some lua libraries, but also random libs for sound, video, analytics and whatever. Most importantly I find here a lib called <em>libcorona.so</em>. Let’s quickly open it with a text editor to search for the string “resource.car”, bingo!</p>
+<p>I’ll have to disassemble the lib in order to understand what’s happening in there. It turns out, there’s an amazing tool that does this and it’s called <a href="https://www.hex-rays.com/products/ida" target="_blank" rel="noopener">IDA</a>. It’s more than a cross-architecture disassembler, it does lot’s of stuff but for my purpose I’ll just use it as a disassembler. It handles libcorona very well and kindly gives us the assembly code.</p>
+<p><em>FYI: I picked the armeabi-v7a version so what follows would be different different with an apk targetting another platform</em></p>
+<p>I look again for the string “resource.car” and find it referenced at offset 0x1081D4.</p>
+<p>[caption id=”attachment_180” align=”aligncenter” width=”762”]<a href="/assets/archive/2015/02/res_car.png"><img src="/assets/archive/2015/02/res_car.png" alt="res_car"></a> The only piece of code referring to “resource.car”[/caption]</p>
+<p>&nbsp;</p>
+<p>It took me a while to figure out how things worked, but at some point i had a theory:<br>From the occurence of “resource.car”, I clearly see two execution paths: one that leads to a portion of code referencing the string <em>“could not verify”</em> and exiting, and one that leads to a subroutine that I deduced was meant to initialize the lua runtime or something like that. What stands between them is a fragile Branch No Equal (BNE) that we would like to turn into a rock solid Branch.</p>
+<p>[caption id=”attachment_181” align=”aligncenter” width=”761”]<a href="/assets/archive/2015/02/jump_annot.png"><img src="/assets/archive/2015/02/jump_annot.png" alt="jump_annot"></a> Take the yellow jump to get to the blue subroutine and avoid the nasty red branches[/caption]</p>
+<p>&nbsp;</p>
+<p>Looking at <a href="http://bear.ces.cwru.edu/eecs_382/ARM7-TDMI-manual-pt2.pdf" target="_blank" rel="noopener">this document</a> and some other branch instructions around in the code, I deduced that I needed to change byte x108247 from 1A to EA to turn my BNE into a B. Going back to my hex editor (I should really learn how to use IDA properly some day) I change the aforementioned value.</p>
+<p>[caption id=”attachment_182” align=”aligncenter” width=”715”]<a href="/assets/archive/2015/02/patched.png"><img src="/assets/archive/2015/02/patched.png" alt="patched"></a> It’s a branch![/caption]</p>
+<p>&nbsp;</p>
+<p>Now let’s pack our patched lib back into the apk, sign it, install it, run it… It runs! Let’s see if our custom value is used.</p>
+<p>[caption id=”attachment_185” align=”aligncenter” width=”700”]<a href="/assets/archive/2015/02/modded.jpg"><img src="/assets/archive/2015/02/modded.jpg" alt="modded"></a> First time ever a guessed binary patch works upon first try.[/caption]</p>
+<p>Let’s try the full pipeline: modify the lua source code, compile it, repack the .car and place it back in the .apk. It works provided we use the proper luac version (a quick search for the version string in liblua.so saves you the guessing). That’s it, the path is paved for hours of fun modding the game!</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>I had seen many game cheats and always wondered how they actually work, now I know at least for this one. To illustrate this article, I managed to strip all ads from the game, create a speed hack, fly mode, and unlimited powerups. Hacking the in-game money is harder because only the server issues coins, so even if you trick your phone into thinking you are rich, the server knows how much you really have.<br>I’d like to emphasis that I personally think buying or downloading a cheat for a game is lame and those who do that just deserve a trojan. However, hacking a game is really something fun that one should try. It requires patience, and a capability to keep a clear mind even after hours of work leading nowhere.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/" data-id="cjh6d84cb000el3yhdpftrql9" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/">android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/funrun/">funrun</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/funrun2/">funrun2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hack/">hack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/reverse-engineering/">reverse engineering</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    
+    <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
+  </nav>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

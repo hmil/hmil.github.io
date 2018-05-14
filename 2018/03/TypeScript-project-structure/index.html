@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
+  
+
+  
+  <title>TypeScript sanity: the proper way to structure large projects | hmil&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="I’ve been experimenting with ways to structure a complex TypeScript project lately while working on Vaultage and I have finally found a solution that provides proper isolation and consistency across p">
+<meta name="keywords" content="TypeScript,monorepo,architecture">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TypeScript sanity: the proper way to structure large projects">
+<meta property="og:url" content="https://hmil.github.io/2018/03/TypeScript-project-structure/index.html">
+<meta property="og:site_name" content="hmil&#39;s blog">
+<meta property="og:description" content="I’ve been experimenting with ways to structure a complex TypeScript project lately while working on Vaultage and I have finally found a solution that provides proper isolation and consistency across p">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://hmil.github.io/assets/ts-structure-tuto/untyped-response.gif">
+<meta property="og:image" content="https://hmil.github.io/assets/ts-structure-tuto/typed-response.gif">
+<meta property="og:updated_time" content="2018-05-08T18:02:29.603Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TypeScript sanity: the proper way to structure large projects">
+<meta name="twitter:description" content="I’ve been experimenting with ways to structure a complex TypeScript project lately while working on Vaultage and I have finally found a solution that provides proper isolation and consistency across p">
+<meta name="twitter:image" content="https://hmil.github.io/assets/ts-structure-tuto/untyped-response.gif">
+  
+    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hmil&#39;s blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">random tech write-ups</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-TypeScript-project-structure" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/03/TypeScript-project-structure/" class="article-date">
+  <time datetime="2018-03-26T15:00:00.000Z" itemprop="datePublished">2018-03-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/software-engineering/">software engineering</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      TypeScript sanity: the proper way to structure large projects
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I’ve been experimenting with ways to structure a complex TypeScript project lately while working on <a href="https://github.com/lbarman/vaultage" target="_blank" rel="noopener">Vaultage</a> and I have finally found a solution that provides proper isolation and consistency across packages.</p>
+<p>Java developers should be familiar with having dozens of sub-projects open simultaneously in their IDE, each with its own build target and dependencies.</p>
+<p>In comparison, JavaScript projects tend to be a mess because of the lack of an idiomatic way to split code across packages. Tools like <a href="https://github.com/lerna/lerna" target="_blank" rel="noopener">lerna</a> help you create a proper JavaScript monorepo and rationalize the development of a complex project. However these tools pack a lot of features which take some time to properly master. The added complexity may result in misunderstanding and in the end the time gained by deploying the tool may be lost in obscure debugging sessions. Additionally, TypeScript is a different beast and requires more work to integrate properly.</p>
+<p>In this tutorial, you will learn the basic principles required to properly architecture a TypeScript project. I intentionally present an opinionated monorepo structure but feel free to reuse the tricks you’ll learn here and apply them to your specific context!</p>
+<p>I created a minimalist project skeleton so you can follow along this tutorial. You can download it <a href="https://github.com/hmil/ts-seed-project/archive/part1.zip" target="_blank" rel="noopener">here</a>.</p>
+<h2 id="The-setup"><a href="#The-setup" class="headerlink" title="The setup"></a>The setup</h2><p>Download and unpack the <a href="https://github.com/hmil/ts-seed-project/archive/part1.zip" target="_blank" rel="noopener">tutorial files</a> into your workspace. You should end up with a project containing a <code>packages</code> sub-folder with three so-called packages inside.<br>Each package is an independent unit of code, with its own build target and test suite:</p>
+<ul>
+<li>The <code>tstuto-server</code> package contains the NodeJS server files</li>
+<li>The <code>tstuto-web-client</code> package contains the web application which talks to the server</li>
+<li>The <code>tstuto-api</code> package contains shared definitions which the client and server will use to communicate in a type-safe way.</li>
+</ul>
+<p>Go ahead and open the top-level folder in your favorite IDE (it should be <a href="https://code.visualstudio.com/" target="_blank" rel="noopener">VSCode</a>, if it’s not, then go download it now, I’ll wait…).</p>
+<p>The sample files contain commented code which you will have to uncomment as you progress through this tutorial.<br>First, you’ll want to check that everything works as intended. Navigate to <code>packages/tstuto-web-client</code> and run:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install</span><br><span class="line">npm run build</span><br></pre></td></tr></table></figure>
+<p>Then <strong>repeat this step for the <code>tstuto-server</code> package</strong>.</p>
+<p>When you are done, you should have successfully built the demo application. Navigate to the <code>tstuto-server</code> package and run <code>npm start</code> to launch the server. Then, point your web browser at <code>http://localhost:3000</code>. You should see an ugly web page with a button.</p>
+<h2 id="Using-a-shared-package"><a href="#Using-a-shared-package" class="headerlink" title="Using a shared package"></a>Using a shared package</h2><p>Take a look at the files <code>packages/tstuto-server/src/controllers/MoodController.ts</code>, and <code>packages/tstuto-web-client/src/main-client.ts</code>.</p>
+<p>The client uses the <a href="https://github.com/axios/axios" target="_blank" rel="noopener">axios</a> library to fetch a mood from the server over HTTP. If you are a type safety freak, something should tickle your senses here: the communication is not safe. Indeed, look at the type returned by the <code>axios</code> call in <code>main-client.ts</code>: you’ll find that it is of the <code>any</code> type. You can use this object however you want and the TypeScript compiler will never complain, even though your code might crash at run-time!</p>
+<p><img src="/assets/ts-structure-tuto/untyped-response.gif" alt="An untyped response lets you type anything and provides no intellisense"></p>
+<p>This is where the <code>tstuto-api</code> package comes into play. Take a look at <code>packages/tstuto-api/src/index.ts</code>, we define a type and two factory functions there. Compile them by navigating to <code>packages/tstuto-api</code> and running <code>npm install &amp;&amp; npm run build</code>.</p>
+<p>Now, going back to <code>MoodController.ts</code>, we can use the factory methods instead of the inline object definitions:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; happyMood, sadMood &#125; <span class="keyword">from</span> <span class="string">'../../../tstuto-api/src/index'</span>;</span><br><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> express <span class="keyword">from</span> <span class="string">'express'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> HAPPY_THRESHOLD = <span class="number">0.3</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">MoodController</span>(<span class="params">_req: express.Request, res: express.Response</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> indicator = <span class="built_in">Math</span>.random();</span><br><span class="line">    <span class="keyword">if</span> (indicator &gt; HAPPY_THRESHOLD) &#123;</span><br><span class="line">        res.json(happyMood(indicator));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        res.json(sadMood(indicator));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>In <code>main-client.ts</code>, use the interface to type the object returned by axios:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; IMoodAPIResponse &#125; <span class="keyword">from</span> <span class="string">'../../tstuto-api/src/index'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ... */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// line 23:</span></span><br><span class="line"><span class="keyword">const</span> mood = <span class="keyword">await</span> axios.get&lt;IMoodAPIResponse&gt;(<span class="string">'/api/mood'</span>);</span><br></pre></td></tr></table></figure>
+<p>That is way better, our API is now type-safe. The TypeScript compiler catches typos, we get auto-completion and code refactoring support!</p>
+<p><img src="/assets/ts-structure-tuto/typed-response.gif" alt="A typed response provides completion and catches typos"></p>
+<p>However, written as is, our import statement actually instructs the TypeScript compiler to compile the target module along with ours. This has multiple nasty side effects and defeats the point of having separate modules altogether.</p>
+<p>It would be much cleaner if we could just write:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; IMoodAPIResponse &#125; <span class="keyword">from</span> <span class="string">'tstuto-api'</span>;</span><br></pre></td></tr></table></figure>
+<p>We will see how we can achieve this in the next section:</p>
+<h2 id="Proper-code-sharing"><a href="#Proper-code-sharing" class="headerlink" title="Proper code sharing"></a>Proper code sharing</h2><p>Hope you are still with me here because we are about to enter the meat of this tutorial: how to properly import typescript modules in a monorepo.</p>
+<p>We previously split our code into three modules and used import statements to use code from one module into another. However, we would like to isolate the modules further and import the built artifact rather than importing the raw source code. This means that we want the TypeScript compiler to use the type definitions emitted during compilation and we want node (or webpack for the client) to import the generated JavaScript file rather than the source TypeScript. This helps us avoid bugs spreading across modules and prevents careless developers from producing spaghetti code (to some extent…).</p>
+<p>Go ahead and replace the two imports looking like <code>import xxx from &#39;../../api/src/index&#39;</code> in <code>main-client.ts</code> and <code>MoodController.ts</code> with just <code>import xxx from &#39;api&#39;</code>:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// main-client.ts:</span></span><br><span class="line"><span class="keyword">import</span> &#123; IMoodAPIResponse &#125; <span class="keyword">from</span> <span class="string">'tstuto-api'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// MoodController.ts:</span></span><br><span class="line"><span class="keyword">import</span> &#123; happyMood, sadMood &#125; <span class="keyword">from</span> <span class="string">'tstuto-api'</span>;</span><br></pre></td></tr></table></figure>
+<p>This should give you an error. To make it disappear, we need to instruct the TypeScript compiler to look for our custom packages in the <code>packages</code> folder. Fortunately, there is an option called <code>baseUrl</code> which allows us to do just that.</p>
+<p>Edit <code>tsconfig.json</code> at the root of the project and uncomment the line <code>&quot;baseUrl&quot;: &quot;packages&quot;</code>. This way the TypeScript compiler also looks at the <code>packages</code> directory to resolve package names. </p>
+<blockquote>
+<p>Note 1: Your packages may conflict with packages installed in <code>node_modules</code>; this is why we prefixed all our packages with <code>tstuto-</code>. </p>
+</blockquote>
+<blockquote>
+<p>Note 2: You may need to reload your editor after you changed <code>tsconfig.json</code>. In VSCode, open the command palette (CTRL+P) and chose “reload window”.</p>
+</blockquote>
+<p>Setting <code>baseUrl</code> in itself is not enough! TypeScript will not recognize your custom module unless you specified the <code>type</code> property in its <code>package.json</code>. Open <code>packages/tstuto-api/package.json</code>. You will see a line with the text “TODO”. Replace it with the following:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"types"</span>: <span class="string">"dist/index.d.ts"</span></span><br></pre></td></tr></table></figure>
+<p><strong>You want to make extra sure that you got this setting right</strong>. If there is an error here, nobody will let you know, your imports might resolve to <code>any</code> and you won’t notice your mistake until it’s too late.</p>
+<p>Now if you go back to <code>packages/tstuto-server</code> and run <code>npm run build</code>, you should get a successful build. However, if you try to start the server with <code>npm run start</code>, it will fail. The reason being that node has no idea where your custom modules are located!</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ npm start</span><br><span class="line"></span><br><span class="line">&gt; tstuto-server@0.0.0 start /workspace/ts-project-seed/packages/tstuto-server</span><br><span class="line">&gt; node bin/server.js</span><br><span class="line"></span><br><span class="line">module.js:540</span><br><span class="line">    throw err;</span><br><span class="line">    ^</span><br><span class="line"></span><br><span class="line">Error: Cannot find module <span class="string">'tstuto-api'</span></span><br><span class="line">    at Function.Module._resolveFilename (module.js:538:15)</span><br><span class="line">    at Function.Module._load (module.js:468:25)</span><br><span class="line">    at Module.require (module.js:587:17)</span><br><span class="line">    at require (internal/module.js:11:18)</span><br><span class="line">    at Object.&lt;anonymous&gt; (/workspace/ts-project-seed/packages/tstuto-server/dist/src/controllers/MoodController.js:3:20)</span><br><span class="line">    at Module._compile (module.js:643:30)</span><br><span class="line">    at Object.Module._extensions..js (module.js:654:10)</span><br><span class="line">    at Module.load (module.js:556:32)</span><br><span class="line">    at tryModuleLoad (module.js:499:12)</span><br><span class="line">    at Function.Module._load (module.js:491:3)</span><br></pre></td></tr></table></figure>
+<p>The next trick we will use is called <code>NODE_PATH</code>.</p>
+<p><code>NODE_PATH</code> is an environment variable node uses for pretty much the same purpose TypeScript uses “baseUrl”: it looks for additional <code>node_modules</code> inside the directory specified by <code>NODE_PATH</code>. The problem is that hacks based on environment variables tend to work poorly cross-platform. That’s why we will use <code>cross-env</code>, a nifty node module that lets you define environment variables in a portable way.</p>
+<p>In <code>packages/tstuto-server/package.json</code>, replace the line <code>&quot;start&quot;: &quot;node bin/server.js&quot;,</code> with <code>&quot;start&quot;: &quot;cross-env NODE_PATH=.. node bin/server.js&quot;,</code>.</p>
+<p>Now, when you run <code>npm start</code>, node will also look at the parent directory when resolving modules. This is how it will know that <code>tstuto-api</code> refers to your custom module in <code>packages/tstuto-api</code>.</p>
+<p>Your application should now work properly!</p>
+<h1 id="Next-steps"><a href="#Next-steps" class="headerlink" title="Next steps"></a>Next steps</h1><p>This setup is already a major step towards a cool monorepo TypeScript project architecture. There are things left to fix though.<br>First, it is tedious to go into each sub-project and manually run <code>npm run build</code> each time we change something. In addition, if we add more modules, manually tracking dependencies can quickly become a nightmare. That’s why we need a build and dependency tracking system to handle all of that for us.<br>Second, we would like to export our project, either to be distributed as an npm module or to be deployed somewhere. We can not ship our packages as separate npm packages just like that because they now depend on the directory structure of the repository.</p>
+<p>We see in the next part how to handle those two issues.</p>
+<p><strong>Next part is coming soon, stay tuned!</strong></p>
+<h1 id="Appendix-How-did-you-serve-the-client-files-again"><a href="#Appendix-How-did-you-serve-the-client-files-again" class="headerlink" title="Appendix: How did you serve the client files again?"></a>Appendix: How did you serve the client files again?</h1><p>You may have noticed that our server also takes care to serve the client. While there are scenarios where you will want to ship the client separately, serving it from the API server is quite handy for development and suits a broad range of practical use-cases.</p>
+<p>The trick fits into these three lines of code:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Bind static content to server</span></span><br><span class="line"><span class="keyword">const</span> pathToWebUI = path.dirname(<span class="built_in">require</span>.resolve(<span class="string">'../../../tstuto-web-client'</span>));</span><br><span class="line"><span class="keyword">const</span> staticDirToServer = path.join(pathToWebUI, <span class="string">'public'</span>);</span><br><span class="line">server.use(express.static(staticDirToServer));</span><br></pre></td></tr></table></figure>
+<p>We get the absolute path to the <code>tstuto-web-client</code> module and concatenate the <code>public</code> directory to it; we then instruct express to serve this folder as static content. Doing it this way allows us to keep the server and client completely separated and avoid any copy which would make our build system much more complex.</p>
+<p><strong>You should use the module name <code>&#39;tstuto-web-client&#39;</code> instead of the relative path <code>&#39;../../../tstuto-web-client&#39;</code> now that you have learned the NODE_PATH trick.</strong> The reason the tutorial files ship with the relative path is to make it work as-is (even if you don’t set NODE_PATH), but this will break when you’ll try to deploy the app in the next part.</p>
+<hr>
+<p><em>Thanks <a href="https://lbarman.ch/" target="_blank" rel="noopener">Ludovic</a> for proofreading this tutorial.</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2018/03/TypeScript-project-structure/" data-id="cjh6d84c60008l3yhfqouf32g" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2018/03/TypeScript-project-structure/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/">TypeScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/">architecture</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/monorepo/">monorepo</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/05/TypeScript-project-structure2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          TypeScript project structure - Chapter 2
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 10px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 10px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript project structure - Chapter 2</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+          </li>
+        
+          <li>
+            <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
+          </li>
+        
+          <li>
+            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Hadrien Milano<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'hmil';
+  
+  var disqus_url = 'https://hmil.github.io/2018/03/TypeScript-project-structure/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
