@@ -6,19 +6,19 @@
   
 
   
-  <title>TypeScript sanity: How to manage and publish a multi-package TypeScript project | hmil&#39;s blog</title>
+  <title>TypeScript sanity: how to manage and publish a multi-package TypeScript project | hmil&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
 <meta name="keywords" content="TypeScript,monorepo,architecture">
 <meta property="og:type" content="article">
-<meta property="og:title" content="TypeScript sanity: How to manage and publish a multi-package TypeScript project">
+<meta property="og:title" content="TypeScript sanity: how to manage and publish a multi-package TypeScript project">
 <meta property="og:url" content="https://hmil.github.io/2018/05/TypeScript-project-structure2/index.html">
 <meta property="og:site_name" content="hmil&#39;s blog">
 <meta property="og:description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-05-14T14:54:21.413Z">
+<meta property="og:updated_time" content="2018-05-16T19:20:35.697Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="TypeScript sanity: How to manage and publish a multi-package TypeScript project">
+<meta name="twitter:title" content="TypeScript sanity: how to manage and publish a multi-package TypeScript project">
 <meta name="twitter:description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
   
     <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
@@ -88,7 +88,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      TypeScript sanity: How to manage and publish a multi-package TypeScript project
+      TypeScript sanity: how to manage and publish a multi-package TypeScript project
     </h1>
   
 
@@ -122,8 +122,9 @@
 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">packages/tstuto-api:</span></span><br><span class="line"><span class="section">packages/tstuto-server: packages/tstuto-api</span></span><br><span class="line"><span class="section">packages/tstuto-web-client: packages/tstuto-api</span></span><br></pre></td></tr></table></figure>
 <p>This is how Make knows in which order to build our packages. But how does it know to install npm dependencies first?</p>
 <p>Open the Makefile in <code>tstuto-web-client</code>, which looks something like this:</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">BIN=public/dist/main.js</span><br><span class="line">SRC =<span class="variable">$(<span class="built_in">shell</span> find src/ -type f -name '*.ts')</span></span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: build</span></span><br><span class="line"><span class="section">build: <span class="variable">$(BIN)</span></span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(BIN)</span>: package-lock.json <span class="variable">$(SRC)</span></span><br><span class="line">	npm run build</span><br><span class="line"></span><br><span class="line"><span class="section">package-lock.json: package.json</span></span><br><span class="line">	npm install</span><br><span class="line">	<span class="comment"># We "touch" package-lock.json to make sure it was last modified after package.json</span></span><br><span class="line">	touch package-lock.json</span><br></pre></td></tr></table></figure>
-<p>The <code>BIN</code> variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle). We define a dependency between this file and <code>package-lock.json</code>, the file which npm uses to keep track of what needs to be installed in <code>node_modules</code>. We then let Make know that it should run <code>npm install</code> whenever <code>package.json</code> has changed. <strong>This means that Make will run npm install when it needs to!</strong></p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">BIN=public/dist/main.js</span><br><span class="line">SRC =<span class="variable">$(<span class="built_in">shell</span> find src/ -type f -name '*.ts')</span></span><br><span class="line">NODE_MODULES=node_modules/.makets</span><br><span class="line">NPM_TASKS=test clean</span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: build</span></span><br><span class="line"><span class="section">build: <span class="variable">$(BIN)</span></span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(NODE_MODULES)</span>: package.json package-lock.json</span><br><span class="line">	npm install</span><br><span class="line">	touch <span class="variable">$(NODE_MODULES)</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(BIN)</span>: <span class="variable">$(NODE_MODULES)</span> <span class="variable">$(SRC)</span></span><br><span class="line">	npm run build</span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: $(NPM_TASKS)</span></span><br><span class="line"><span class="variable">$(NPM_TASKS)</span>: <span class="variable">$(NODE_MODULES)</span></span><br><span class="line">	npm run <span class="variable">$@</span></span><br></pre></td></tr></table></figure>
+<p>The <code>BIN</code> variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle).<br>We create a special file inside the node_modules directory, called <code>.makets</code> (which stands for make TimeStamp). This file records the last time that make ran <code>npm install</code> and helps it figure out if it should run the command again (that is, when either <code>package.json</code> or <code>package-lock.json</code> has changed).</p>
+<p>Some tasks are defined in the <em>script</em> property of the <code>package.json</code> and do not need any additional logic in Makefile. We define those in the <em>NPM_TASKS</em> variable which is used to run the npm script of the same name.</p>
 <h3 id="Utility-tasks"><a href="#Utility-tasks" class="headerlink" title="Utility tasks"></a>Utility tasks</h3><p>Let’s go back to the top-level Makefile quickly to talk about utility tasks.</p>
 <p>You might encounter repetitive tasks which are specific to one package and cannot be generalized to all packages. For instance, we want a task to start our development server. Such tasks can be defined individually in the top-level Makefile like so:</p>
 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: serve</span></span><br><span class="line"><span class="section">serve:</span></span><br><span class="line">	<span class="variable">$(MAKE)</span> build</span><br><span class="line">	<span class="variable">$(MAKE)</span> -C packages/tstuto-server serve</span><br></pre></td></tr></table></figure>
@@ -231,7 +232,7 @@
       <ul>
         
           <li>
-            <a href="/2018/05/TypeScript-project-structure2/">TypeScript sanity: How to manage and publish a multi-package TypeScript project</a>
+            <a href="/2018/05/TypeScript-project-structure2/">TypeScript sanity: how to manage and publish a multi-package TypeScript project</a>
           </li>
         
           <li>
