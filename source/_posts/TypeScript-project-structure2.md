@@ -68,20 +68,28 @@ Open the Makefile in `tstuto-web-client`, which looks something like this:
 ```Makefile
 BIN=public/dist/main.js
 SRC =$(shell find src/ -type f -name '*.ts')
+NODE_MODULES=node_modules/.makets
+NPM_TASKS=test clean
 
 .PHONY: build
 build: $(BIN)
 
-$(BIN): package-lock.json $(SRC)
+$(NODE_MODULES): package.json package-lock.json
+	npm install
+	touch $(NODE_MODULES)
+
+$(BIN): $(NODE_MODULES) $(SRC)
 	npm run build
 
-package-lock.json: package.json
-	npm install
-	# We "touch" package-lock.json to make sure it was last modified after package.json
-	touch package-lock.json
+.PHONY: $(NPM_TASKS)
+$(NPM_TASKS): $(NODE_MODULES)
+	npm run $@
 ```
 
-The `BIN` variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle). We define a dependency between this file and `package-lock.json`, the file which npm uses to keep track of what needs to be installed in `node_modules`. We then let Make know that it should run `npm install` whenever `package.json` has changed. **This means that Make will run npm install when it needs to!**
+The `BIN` variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle). 
+We create a special file inside the node_modules directory, called `.makets` (which stands for make TimeStamp). This file records the last time that make ran `npm install` and helps it figure out if it should run the command again (that is, when either `package.json` or `package-lock.json` has changed).
+
+Some tasks are defined in the _script_ property of the `package.json` and do not need any additional logic in Makefile. We define those in the *NPM_TASKS* variable which is used to run the npm script of the same name.
 
 
 ### Utility tasks
