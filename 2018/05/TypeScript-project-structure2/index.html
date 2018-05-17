@@ -6,20 +6,20 @@
   
 
   
-  <title>TypeScript sanity: how to manage and publish a multi-package TypeScript project | hmil&#39;s blog</title>
+  <title>How to manage and publish a multi-package TypeScript project | hmil&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
+  <meta name="description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish or deploy th">
 <meta name="keywords" content="TypeScript,monorepo,architecture">
 <meta property="og:type" content="article">
-<meta property="og:title" content="TypeScript sanity: how to manage and publish a multi-package TypeScript project">
+<meta property="og:title" content="How to manage and publish a multi-package TypeScript project">
 <meta property="og:url" content="https://hmil.github.io/2018/05/TypeScript-project-structure2/index.html">
 <meta property="og:site_name" content="hmil&#39;s blog">
-<meta property="og:description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
+<meta property="og:description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish or deploy th">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-05-16T19:20:35.697Z">
+<meta property="og:updated_time" content="2018-05-17T13:50:16.669Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="TypeScript sanity: how to manage and publish a multi-package TypeScript project">
-<meta name="twitter:description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages">
+<meta name="twitter:title" content="How to manage and publish a multi-package TypeScript project">
+<meta name="twitter:description" content="In the previous part, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish or deploy th">
   
     <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
   
@@ -88,7 +88,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      TypeScript sanity: how to manage and publish a multi-package TypeScript project
+      How to manage and publish a multi-package TypeScript project
     </h1>
   
 
@@ -96,12 +96,12 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>In the <a href="https://blog.hmil.fr/2018/03/TypeScript-project-structure/" target="_blank" rel="noopener">previous part</a>, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages. Which is what we will cover in this chapter.</p>
+        <p>In the <a href="/2018/03/TypeScript-project-structure/">previous part</a>, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish or deploy the packages. Which is what we will cover in this chapter.</p>
 <h2 id="To-follow-along"><a href="#To-follow-along" class="headerlink" title="To follow along"></a>To follow along</h2><p>As in the previous part, I have created a simple repository which you can use to follow along this tutorial. This time however, you must first run a script to customize the project before you can start using the repository. The reason is that at the end of this tutorial, you will be able to publish your project to npm. In order to make this work for everyone, we have to rename the packages with a prefix which is unique to each reader of this tutorial. Don’t worry, it only takes a second:</p>
 <ol>
 <li>Download the archive <a href="https://github.com/hmil/ts-seed-project/archive/part2.zip" target="_blank" rel="noopener">for part 2</a>, and unzip it somewhere.</li>
 <li>If you haven’t already, <a href="https://www.npmjs.com/signup" target="_blank" rel="noopener">sign up</a> to npm and <a href="https://docs.npmjs.com/cli/adduser" target="_blank" rel="noopener">log in</a> using the command line. Or, if you don’t care about publishing to npm, go straight to <em>4</em>.</li>
-<li>In the project, run <code>./customize.sh</code></li>
+<li>In the project, run <code>./customize.sh</code>. If it worked, you can skip step 4.</li>
 <li>Otherwise, run the script like so: <code>./customize.sh username</code>, where <em>username</em> is any username you picked. Beware that you will not be able to publish the packages. </li>
 </ol>
 <p>Alternatively, if you do not wish to download the files, you can read the <a href="https://github.com/hmil/ts-seed-project/compare/part1...part2" target="_blank" rel="noopener">diff on github</a>.</p>
@@ -114,17 +114,17 @@
 <li>utility tasks</li>
 </ul>
 <h3 id="Global-tasks"><a href="#Global-tasks" class="headerlink" title="Global tasks"></a>Global tasks</h3><p>Global tasks are tasks which must run in all packages. They are defined in this line:</p>
-<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TASKS=build clean test</span><br></pre></td></tr></table></figure>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TASKS :=build clean test</span><br></pre></td></tr></table></figure>
 <p>For instance, the <code>build</code> task will build all packages at once. To run it, type:</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make build</span><br></pre></td></tr></table></figure>
 <p>You will notice that this command also installs npm dependencies, and that it builds the packages in the correct order! Make did not <em>magically</em> figure this out, <em>we</em> instructed it to do so. Keep reading to find out how.</p>
-<h3 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h3><p>Dependency declaration is probably the easiest thing to do in make. Simply write the path to the dependent, followed by a colon, followed by a space-separated list of dependencies.<br>For instance, the dependencies between our packages are defined like so:</p>
+<h3 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h3><p>Dependency declaration is the easiest and most useful thing with <em>Make</em>. Simply write the path to the dependent, followed by a colon, followed by a space-separated list of dependencies.<br>For instance, the dependencies between our packages are defined like so:</p>
 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">packages/tstuto-api:</span></span><br><span class="line"><span class="section">packages/tstuto-server: packages/tstuto-api</span></span><br><span class="line"><span class="section">packages/tstuto-web-client: packages/tstuto-api</span></span><br></pre></td></tr></table></figure>
 <p>This is how Make knows in which order to build our packages. But how does it know to install npm dependencies first?</p>
 <p>Open the Makefile in <code>tstuto-web-client</code>, which looks something like this:</p>
 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">BIN=public/dist/main.js</span><br><span class="line">SRC =<span class="variable">$(<span class="built_in">shell</span> find src/ -type f -name '*.ts')</span></span><br><span class="line">NODE_MODULES=node_modules/.makets</span><br><span class="line">NPM_TASKS=test clean</span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: build</span></span><br><span class="line"><span class="section">build: <span class="variable">$(BIN)</span></span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(NODE_MODULES)</span>: package.json package-lock.json</span><br><span class="line">	npm install</span><br><span class="line">	touch <span class="variable">$(NODE_MODULES)</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(BIN)</span>: <span class="variable">$(NODE_MODULES)</span> <span class="variable">$(SRC)</span></span><br><span class="line">	npm run build</span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: $(NPM_TASKS)</span></span><br><span class="line"><span class="variable">$(NPM_TASKS)</span>: <span class="variable">$(NODE_MODULES)</span></span><br><span class="line">	npm run <span class="variable">$@</span></span><br></pre></td></tr></table></figure>
-<p>The <code>BIN</code> variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle).<br>We create a special file inside the node_modules directory, called <code>.makets</code> (which stands for make TimeStamp). This file records the last time that make ran <code>npm install</code> and helps it figure out if it should run the command again (that is, when either <code>package.json</code> or <code>package-lock.json</code> has changed).</p>
-<p>Some tasks are defined in the <em>script</em> property of the <code>package.json</code> and do not need any additional logic in Makefile. We define those in the <em>NPM_TASKS</em> variable which is used to run the npm script of the same name.</p>
+<p>The <code>BIN</code> variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle).<br>We create a special file inside the node_modules directory, called <code>.makets</code> (which stands for <em>make TimeStamp</em>). This file records the last time that make ran <code>npm install</code> and helps it figure out if it should run the command again (that is, when either <code>package.json</code> or <code>package-lock.json</code> has changed).</p>
+<p>Some tasks are defined in the <em>script</em> property of the <code>package.json</code> and do not need any additional logic in the Makefile. We define those in the <em>NPM_TASKS</em> variable which is used to run the npm script of the same name.</p>
 <h3 id="Utility-tasks"><a href="#Utility-tasks" class="headerlink" title="Utility tasks"></a>Utility tasks</h3><p>Let’s go back to the top-level Makefile quickly to talk about utility tasks.</p>
 <p>You might encounter repetitive tasks which are specific to one package and cannot be generalized to all packages. For instance, we want a task to start our development server. Such tasks can be defined individually in the top-level Makefile like so:</p>
 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"><span class="meta-keyword">.PHONY</span>: serve</span></span><br><span class="line"><span class="section">serve:</span></span><br><span class="line">	<span class="variable">$(MAKE)</span> build</span><br><span class="line">	<span class="variable">$(MAKE)</span> -C packages/tstuto-server serve</span><br></pre></td></tr></table></figure>
@@ -136,8 +136,8 @@
 <p>Without further ado, let’s see how we solve the last remaining problem: <strong>publishing</strong>.</p>
 <h2 id="Publishing-Deployment"><a href="#Publishing-Deployment" class="headerlink" title="Publishing/Deployment"></a>Publishing/Deployment</h2><p>The setup we have right now is great for development, but you may be wondering: “How do I deploy this to production?” or “How do I publish this as npm packages?”. Fear not, the answer lies right below!</p>
 <p>You could of course clone your whole repository to your production environment and run <code>make serve</code>. That would work but it would also be quite unprofessional to proceed this way.</p>
-<p>A more idiomatic way to proceed is to publish your packages to an artifact repository. Open source projects usually rely on npm’s public repository while proprietary software editors have their own private artifact servers. Luckily for us, this means that no matter what you are currently trying to do, whether it’s an open or closed source, whether it’s a library, a microservice or a CLI tool, the process to publish it is exactly the same!</p>
-<p>Let’s recap what we want to do before digging into the details: We want to take all of our packages, give them appropriate version numbers and publish them using npm. Also, in the development setup, sibling packages don’t explicitly declare their dependencies on each other. We need to do this in order to avoid a confusion between the local packages and those npm would try to install. However, before releasing a package, we must add these dependencies.</p>
+<p>A more idiomatic way to proceed is to publish your packages to an <strong>artifact repository</strong>. Open source projects usually rely on npm’s public repository while proprietary software editors have their own private artifact servers. Luckily for us, this means that no matter what you are currently trying to do, whether it’s an open or closed source, whether it’s a library, a microservice or a CLI tool, the process to publish it is exactly the same!</p>
+<p>Let’s recap what we want to do before digging into the details: We want to take all of our packages, give them appropriate version numbers and publish them using npm.<br>Oh, and one more detail: When they get published, our packages need to declare their dependencies to sibling packages in our project (because within the artifact repository, each package stands alone).</p>
 <p>All the magic happens inside <code>tools/publish.ts</code>. This script does the following:</p>
 <ul>
 <li>Determines the next version number</li>
@@ -146,18 +146,19 @@
 <li>Performs a <code>npm publish</code></li>
 <li>Rolls back the changes made in the <code>package.json</code> files</li>
 </ul>
-<p>I will not dive into the details of this script and I would not advise you to reuse it as-is for your own projects. Instead, you should try it out and understand how it works so you can apply this knowledge to your specific use-case.<br>We call this file from the <code>Makefile</code>, this way we can leverage the build system to run a build and test the packages before performing a release. I will not dig into the details of this script but I invite you to take a look at it by yourself. You can try it out by running:</p>
+<p>I will not dive into the details of this script and I would not advise you to reuse it as-is for your own projects. Instead, you should try it out and understand how it works so you can apply this knowledge to your specific use-case.</p>
+<p>We call this script from the <code>Makefile</code>. Run it with the following command:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make publish</span><br></pre></td></tr></table></figure>
 <p><strong>If you are currently logged into npm, this will effectively publish the demo package to <code>@username/tstuto-xxx</code>.</strong></p>
 <p>You can now test your newly-deployed package by running:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g @username/tstuto-server</span><br></pre></td></tr></table></figure>
-<p>(Make sure to replace <em>username</em> with your actual npm username. You may need to run it with <code>sudo</code> depending on your setup).</p>
+<p>(Make sure to replace <em>username</em> with your actual npm username. You may need to run this command with <code>sudo</code>).</p>
 <p>And then, start your server by running:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">my-awesome-app</span><br></pre></td></tr></table></figure>
 <p>This should start the application.</p>
 <hr>
 <p>Well done! If you made it so far, you now know the key elements to manage a multi-package TypeScript project, develop it and publish it (or ship it for production).</p>
-<h2 id="Bonus"><a href="#Bonus" class="headerlink" title="Bonus"></a>Bonus</h2><p><code>Make</code> can run multiple tasks in parallel in a way that is consistent with the dependencies declared in the makefile. For instance, to run up to 4 tasks in parallel, run <code>make -j4 build</code>. This can help you speed up builds with many packages when the dependency tree isn’t too deep.</p>
+<h2 id="Bonus"><a href="#Bonus" class="headerlink" title="Bonus"></a>Bonus</h2><p><code>Make</code> can run multiple tasks in parallel in a way that is consistent with the dependencies declared in the makefile. For instance, to run up to 4 tasks in parallel, run <code>make -j4 build</code>. This can help you speed up builds when you have many packages and a flat dependency tree.</p>
 
       
     </div>
@@ -178,7 +179,7 @@
   
     <a href="/2018/03/TypeScript-project-structure/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">TypeScript sanity: the proper way to structure large projects</div>
+      <div class="article-nav-title">Tips and tricks to structure multi-package TypeScript projects</div>
     </a>
   
 </nav>
@@ -232,11 +233,11 @@
       <ul>
         
           <li>
-            <a href="/2018/05/TypeScript-project-structure2/">TypeScript sanity: how to manage and publish a multi-package TypeScript project</a>
+            <a href="/2018/05/TypeScript-project-structure2/">How to manage and publish a multi-package TypeScript project</a>
           </li>
         
           <li>
-            <a href="/2018/03/TypeScript-project-structure/">TypeScript sanity: the proper way to structure large projects</a>
+            <a href="/2018/03/TypeScript-project-structure/">Tips and tricks to structure multi-package TypeScript projects</a>
           </li>
         
           <li>
