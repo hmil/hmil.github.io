@@ -1,5 +1,5 @@
 ---
-title: "TypeScript sanity: the proper way to structure large projects"
+title: "Tips and tricks to structure multi-package TypeScript projects"
 date: 2018-03-26 17:00:00
 tags:
   - TypeScript
@@ -15,21 +15,22 @@ Java developers should be familiar with having dozens of sub-projects open simul
 
 In comparison, JavaScript projects tend to be a mess because of the lack of an idiomatic way to split code across packages. Tools like [lerna](https://github.com/lerna/lerna) help you create a proper JavaScript monorepo and rationalize the development of a complex project. However these tools pack a lot of features which take some time to properly master. The added complexity may result in misunderstanding and in the end the time gained by deploying the tool may be lost in obscure debugging sessions. Additionally, TypeScript is a different beast and requires more work to integrate properly.
 
-In this tutorial, you will learn the basic principles required to properly architecture a TypeScript project. I intentionally present an opinionated monorepo structure but feel free to reuse the tricks you'll learn here and apply them to your specific context!
+In this tutorial, you will learn the basic principles behind a multi-package TypeScript project so you can apply them in your own work.
 
 I created a minimalist project skeleton so you can follow along this tutorial. You can download it [here](https://github.com/hmil/ts-seed-project/archive/part1.zip).
 
 ## The setup
 
-Download and unpack the [tutorial files](https://github.com/hmil/ts-seed-project/archive/part1.zip) into your workspace. You should end up with a project containing a `packages` sub-folder with three so-called packages inside.  
+Download and unpack the [tutorial files](https://github.com/hmil/ts-seed-project/archive/part1.zip) into your workspace. You should end up with a project containing a `packages` sub-folder with three packages inside.  
 Each package is an independent unit of code, with its own build target and test suite:
 - The `tstuto-server` package contains the NodeJS server files
 - The `tstuto-web-client` package contains the web application which talks to the server
 - The `tstuto-api` package contains shared definitions which the client and server will use to communicate in a type-safe way.
 
-Go ahead and open the top-level folder in your favorite IDE (it should be [VSCode](https://code.visualstudio.com/), if it's not, then go download it now, I'll wait...).
+As you may have guessed, our example application consists of a simple web server and a web application which talk over HTTP.
 
-The sample files contain commented code which you will have to uncomment as you progress through this tutorial.  
+Go ahead and open the top-level folder in your favorite TypeScript IDE (it should be [VSCode](https://code.visualstudio.com/), if it's not, then go ahead and download it now, I'll wait...).
+ 
 First, you'll want to check that everything works as intended. Navigate to `packages/tstuto-web-client` and run:
 
 ```sh
@@ -51,9 +52,9 @@ The client uses the [axios](https://github.com/axios/axios) library to fetch a m
 
 ![An untyped response lets you type anything and provides no intellisense](/assets/ts-structure-tuto/untyped-response.gif)
 
-This is where the `tstuto-api` package comes into play. Take a look at `packages/tstuto-api/src/index.ts`, we define a type and two factory functions there. Compile them by navigating to `packages/tstuto-api` and running `npm install && npm run build`.
+Enter the `tstuto-api` package. Take a look at `packages/tstuto-api/src/index.ts`, we define a type and two factory functions there. **Compile them** by navigating to `packages/tstuto-api` and running `npm install && npm run build`.
 
-Now, going back to `MoodController.ts`, we can use the factory methods instead of the inline object definitions:
+Now, going back to `MoodController.ts`, **replace the function by the following**, which uses the factory methods instead of the inline object definitions:
 
 ```typescript
 import { happyMood, sadMood } from '../../../tstuto-api/src/index';
@@ -82,7 +83,7 @@ import { IMoodAPIResponse } from '../../tstuto-api/src/index';
 const mood = await axios.get<IMoodAPIResponse>('/api/mood');
 ```
 
-That is way better, our API is now type-safe. The TypeScript compiler catches typos, we get auto-completion and code refactoring support!
+That is way better, our API is now type-safe. The TypeScript compiler catches typos, and we have proper auto-completion and code refactoring!
 
 ![A typed response provides completion and catches typos](/assets/ts-structure-tuto/typed-response.gif)
 
@@ -94,14 +95,12 @@ It would be much cleaner if we could just write:
 import { IMoodAPIResponse } from 'tstuto-api';
 ```
 
-We will see how we can achieve this in the next section:
+We will see how we can achieve this in the next section.
 
 
 ## Proper code sharing
 
-Hope you are still with me here because we are about to enter the meat of this tutorial: how to properly import typescript modules in a monorepo.
-
-We previously split our code into three modules and used import statements to use code from one module into another. However, we would like to isolate the modules further and import the built artifact rather than importing the raw source code. This means that we want the TypeScript compiler to use the type definitions emitted during compilation and we want node (or webpack for the client) to import the generated JavaScript file rather than the source TypeScript. This helps us avoid bugs spreading across modules and prevents careless developers from producing spaghetti code (to some extent...).
+So far, we've split our code into three modules and used import statements to borrow code from one module into another. However, we would like to isolate the modules further and import the built artifact rather than importing the raw source code. This means that we want the TypeScript compiler to use the type definitions emitted during compilation and we want node (or webpack for the client) to import the generated JavaScript file rather than the source TypeScript. This helps us avoid bugs spreading across modules and prevents careless developers from producing spaghetti code (to some extent...). It will also **speed up your builds** because `tsc` won't have to compile the same source files over and over.
 
 Go ahead and replace the two imports looking like `import xxx from '../../api/src/index'` in `main-client.ts` and `MoodController.ts` with just `import xxx from 'api'`:
 
@@ -113,23 +112,23 @@ import { IMoodAPIResponse } from 'tstuto-api';
 import { happyMood, sadMood } from 'tstuto-api';
 ```
 
-This should give you an error. To make it disappear, we need to instruct the TypeScript compiler to look for our custom packages in the `packages` folder. Fortunately, there is an option called `baseUrl` which allows us to do just that.
+Don't worry about the compiler error. All we need to do to make it disappear is instruct the TypeScript compiler to look for our custom packages in the `packages` folder. Fortunately, there is an option called `baseUrl` which allows us to do just that.
 
 Edit `tsconfig.json` at the root of the project and uncomment the line `"baseUrl": "packages"`. This way the TypeScript compiler also looks at the `packages` directory to resolve package names. 
 
-> Note 1: Your packages may conflict with packages installed in `node_modules`; this is why we prefixed all our packages with `tstuto-`. 
+> Note 1: Your packages may conflict with packages installed in `node_modules`; this is why we prefixed all our packages with `tstuto-`: to make sure that we don't accidentally shadow an actual npm package. 
 
-> Note 2: You may need to reload your editor after you changed `tsconfig.json`. In VSCode, open the command palette (CTRL+P) and chose "reload window".
+> Note 2: You may need to reload your editor after you changed `tsconfig.json`. In VSCode, open the command palette (CTRL+SHIFT+P) and chose "reload window".
 
-Setting `baseUrl` in itself is not enough! TypeScript will not recognize your custom module unless you specified the `type` property in its `package.json`. Open `packages/tstuto-api/package.json`. You will see a line with the text "TODO". Replace it with the following:
+There is one more thing we need to do in order for this to work. TypeScript will not recognize your custom module unless you specified the `type` property in its `package.json`. Open `packages/tstuto-api/package.json`. You will see a line with the text "TODO". Replace it with the following:
 
 ```typescript
 "types": "dist/index.d.ts"
 ```
 
-**You want to make extra sure that you got this setting right**. If there is an error here, nobody will let you know, your imports might resolve to `any` and you won't notice your mistake until it's too late.
+**You want to make extra sure that you got this setting right**. If there is an error here, nobody will let you know, your imports might resolve to `any` and you won't notice your mistake until it's too late. **The `types` property in package.json must point to the type definition of your entry point!**
 
-Now if you go back to `packages/tstuto-server` and run `npm run build`, you should get a successful build. However, if you try to start the server with `npm run start`, it will fail. The reason being that node has no idea where your custom modules are located!
+Now if you go back to `packages/tstuto-server` and run `npm run build`, you should get a successful build. However, if you try to start the server with `npm run start`, it will fail. Why? Although the TS compiler has figured out your project structure, Node.js is still oblivious to it: it doesn't know where to find your custom modules at run time!
 
 ```sh
 $ npm start
@@ -166,18 +165,17 @@ Your application should now work properly!
 
 # Next steps
 
-This setup is already a major step towards a cool monorepo TypeScript project architecture. There are things left to fix though.
-First, it is tedious to go into each sub-project and manually run `npm run build` each time we change something. In addition, if we add more modules, manually tracking dependencies can quickly become a nightmare. That's why we need a build and dependency tracking system to handle all of that for us.
-Second, we would like to export our project, either to be distributed as an npm module or to be deployed somewhere. We can not ship our packages as separate npm packages just like that because they now depend on the directory structure of the repository.
+You have learned the fundamental tricks which will allow you to structure a multi-package typescript project. There are things left to fix though.  
+1. It is tedious to go into each sub-project and manually run `npm run build` each time we change something. In addition, if we add more modules, manually tracking dependencies can quickly become a nightmare. That's why we need a **build and dependency tracking system** to handle all of that for us.
+2. We would like to **export our project**, either to be distributed as an npm module or to be deployed somewhere. We can not ship our packages as separate npm packages just like that because they now depend on the directory structure of the repository.
 
-We see in the next part how to handle those two issues.
+**See you in the [next part of this tutorial](/2018/05/TypeScript-project-structure2/), where we discuss those issues.** 
 
-**Next part is coming soon, stay tuned!**
-
+---
 
 # Appendix: How did you serve the client files again?
 
-You may have noticed that our server also takes care to serve the client. While there are scenarios where you will want to ship the client separately, serving it from the API server is quite handy for development and suits a broad range of practical use-cases.
+You may have noticed that our server also takes care to serve the client (as static files). While there are scenarios where you will want to ship the client separately, serving it from the API server is quite handy for development and suits a broad range of practical use-cases.
 
 The trick fits into these three lines of code:
 

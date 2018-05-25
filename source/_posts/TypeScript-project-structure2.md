@@ -1,5 +1,5 @@
 ---
-title: "TypeScript sanity: how to manage and publish a multi-package TypeScript project"
+title: "How to manage and publish a multi-package TypeScript project"
 date: 2018-05-14 17:00:00
 tags:
   - TypeScript
@@ -9,7 +9,7 @@ categories:
   - software engineering
 ---
 
-In the [previous part](https://blog.hmil.fr/2018/03/TypeScript-project-structure/), we've seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish the packages. Which is what we will cover in this chapter.
+In the [previous part](/2018/03/TypeScript-project-structure/), we've seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish or deploy the packages. Which is what we will cover in this chapter.
 
 ## To follow along
 
@@ -17,7 +17,7 @@ As in the previous part, I have created a simple repository which you can use to
 
 1. Download the archive [for part 2](https://github.com/hmil/ts-seed-project/archive/part2.zip), and unzip it somewhere.
 2. If you haven't already, [sign up](https://www.npmjs.com/signup) to npm and [log in](https://docs.npmjs.com/cli/adduser) using the command line. Or, if you don't care about publishing to npm, go straight to *4*.
-3. In the project, run `./customize.sh`
+3. In the project, run `./customize.sh`. If it worked, you can skip step 4.
 4. Otherwise, run the script like so: `./customize.sh username`, where _username_ is any username you picked. Beware that you will not be able to publish the packages. 
 
 Alternatively, if you do not wish to download the files, you can read the [diff on github](https://github.com/hmil/ts-seed-project/compare/part1...part2).
@@ -39,7 +39,7 @@ The top-level Makefile defines three things:
 Global tasks are tasks which must run in all packages. They are defined in this line:
 
 ```Makefile
-TASKS=build clean test
+TASKS :=build clean test
 ```
 
 For instance, the `build` task will build all packages at once. To run it, type:
@@ -52,7 +52,7 @@ You will notice that this command also installs npm dependencies, and that it bu
 
 ### Dependencies
 
-Dependency declaration is probably the easiest thing to do in make. Simply write the path to the dependent, followed by a colon, followed by a space-separated list of dependencies.
+Dependency declaration is the easiest and most useful thing with *Make*. Simply write the path to the dependent, followed by a colon, followed by a space-separated list of dependencies.
 For instance, the dependencies between our packages are defined like so:
 
 ```Makefile
@@ -87,9 +87,9 @@ $(NPM_TASKS): $(NODE_MODULES)
 ```
 
 The `BIN` variable contains the path to the output file of our package (in this case, it is the client-side javascript bundle). 
-We create a special file inside the node_modules directory, called `.makets` (which stands for make TimeStamp). This file records the last time that make ran `npm install` and helps it figure out if it should run the command again (that is, when either `package.json` or `package-lock.json` has changed).
+We create a special file inside the node_modules directory, called `.makets` (which stands for *make TimeStamp*). This file records the last time that make ran `npm install` and helps it figure out if it should run the command again (that is, when either `package.json` or `package-lock.json` has changed).
 
-Some tasks are defined in the _script_ property of the `package.json` and do not need any additional logic in Makefile. We define those in the *NPM_TASKS* variable which is used to run the npm script of the same name.
+Some tasks are defined in the _script_ property of the `package.json` and do not need any additional logic in the Makefile. We define those in the *NPM_TASKS* variable which is used to run the npm script of the same name.
 
 
 ### Utility tasks
@@ -122,9 +122,10 @@ The setup we have right now is great for development, but you may be wondering: 
 
 You could of course clone your whole repository to your production environment and run `make serve`. That would work but it would also be quite unprofessional to proceed this way.
 
-A more idiomatic way to proceed is to publish your packages to an artifact repository. Open source projects usually rely on npm's public repository while proprietary software editors have their own private artifact servers. Luckily for us, this means that no matter what you are currently trying to do, whether it's an open or closed source, whether it's a library, a microservice or a CLI tool, the process to publish it is exactly the same!
+A more idiomatic way to proceed is to publish your packages to an **artifact repository**. Open source projects usually rely on npm's public repository while proprietary software editors have their own private artifact servers. Luckily for us, this means that no matter what you are currently trying to do, whether it's an open or closed source, whether it's a library, a microservice or a CLI tool, the process to publish it is exactly the same!
 
-Let's recap what we want to do before digging into the details: We want to take all of our packages, give them appropriate version numbers and publish them using npm. Also, in the development setup, sibling packages don't explicitly declare their dependencies on each other. We need to do this in order to avoid a confusion between the local packages and those npm would try to install. However, before releasing a package, we must add these dependencies.
+Let's recap what we want to do before digging into the details: We want to take all of our packages, give them appropriate version numbers and publish them using npm.  
+Oh, and one more detail: When they get published, our packages need to declare their dependencies to sibling packages in our project (because within the artifact repository, each package stands alone).
 
 All the magic happens inside `tools/publish.ts`. This script does the following:
 - Determines the next version number
@@ -133,8 +134,9 @@ All the magic happens inside `tools/publish.ts`. This script does the following:
 - Performs a `npm publish`
 - Rolls back the changes made in the `package.json` files
 
-I will not dive into the details of this script and I would not advise you to reuse it as-is for your own projects. Instead, you should try it out and understand how it works so you can apply this knowledge to your specific use-case.  
-We call this file from the `Makefile`, this way we can leverage the build system to run a build and test the packages before performing a release. I will not dig into the details of this script but I invite you to take a look at it by yourself. You can try it out by running:
+I will not dive into the details of this script and I would not advise you to reuse it as-is for your own projects. Instead, you should try it out and understand how it works so you can apply this knowledge to your specific use-case.
+
+We call this script from the `Makefile`. Run it with the following command:
 
 ```
 make publish
@@ -148,7 +150,7 @@ You can now test your newly-deployed package by running:
 npm install -g @username/tstuto-server
 ```
 
-(Make sure to replace _username_ with your actual npm username. You may need to run it with `sudo` depending on your setup).
+(Make sure to replace _username_ with your actual npm username. You may need to run this command with `sudo`).
 
 And then, start your server by running:
 
@@ -164,5 +166,5 @@ Well done! If you made it so far, you now know the key elements to manage a mult
 
 ## Bonus
 
-`Make` can run multiple tasks in parallel in a way that is consistent with the dependencies declared in the makefile. For instance, to run up to 4 tasks in parallel, run `make -j4 build`. This can help you speed up builds with many packages when the dependency tree isn't too deep.
+`Make` can run multiple tasks in parallel in a way that is consistent with the dependencies declared in the makefile. For instance, to run up to 4 tasks in parallel, run `make -j4 build`. This can help you speed up builds when you have many packages and a flat dependency tree.
 
