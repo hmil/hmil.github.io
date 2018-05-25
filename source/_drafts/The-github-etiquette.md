@@ -22,7 +22,7 @@ You will only lose time looking for alternatives. You will find that prior art d
 
 It would also be a huge waste of time trying to add a feature to an existing project. The legacy codebase of established projects is massive and messy. Just learning the relevant bits would take as much time as coding the whole solution from scratch anyway. And I'm not even talking about the near-infinite number of hours of work lost in feature requests which end up being rejected by the project owner after 3 months of silence.
 
-## 2. Google and StackOverflow won't help you
+## 2. Google and StackOverflow won't help you
 
 Don't waste your precious time googling for a solution. Most of the answers on StackOverflow are garbage anyway, and the library you are working with (and which, of course, is the root cause of your current issue) is not that popular, hence chances of finding the exact solution to your problem online are minimal.
 
@@ -33,7 +33,7 @@ Instead, you better bother that project maintainer, whose lack of QA considerati
 This tip is similar to number 2. If a project you are using doesn't work, it's probably the maintainer's fault. Don't even bother looking for an answer in the project wiki or investigating the bug yourself. Just go ahead and nag the project maintainer, he or she will probably be able to fix their buggy project just for you.  
 Don't forget to check back each day and notify the maintainer if he forgot to respond to your last message.
 
-## 4. Be as vague as possible
+## 4. Be as vague as possible
 
 When you open an issue for a bug you've encountered (which should be about 2 minutes after you've noticed said bug if you follow the advice above), please do yourself a favor and describe your issue in as vague terms as possible. This way you avoid making a bad diagnosis and mislead the maintainer. Also, don't post a snippet of your own code, system stats or installed libraries as it may leak sensitive information out to the public (remember hackers are constantly scraping GitHub for sensitive information!).
 
@@ -59,10 +59,10 @@ Let's say there is this extremely useful feature you need, and the project seems
 
 Then make sure to secretly develop the feature without letting the maintainer know; otherwise he might try to cut the grass under your feet. Don't let anyone know you are working on this awesome addition until the very last moment when you submit your huge pull request as a single, solid, code change. *Wow* factor guaranteed!
 
-## 9. Do not answer other people's questions
+## 9. Do not answer other people's questions
 
 
 
-## 10. Use issues as a general purpose Q&A place
+## 10. Use issues as a general purpose Q&A place
 
 
