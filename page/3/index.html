@@ -67,6 +67,85 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-00-hacking-funrun2-how-to-reverse-engineer-a-corona-app" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/" class="article-date">
+  <time datetime="2015-02-13T16:27:12.000Z" itemprop="datePublished">2015-02-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/hacking/">hacking</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/">Hacking FunRun2 — how to reverse engineer a Corona app</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>Disclaimer:</strong> This article is a bit old and does not apply to recent versions of the corona sdk. It is put here <strong>for educational purpose</strong>, showing how one may try to break into this kind of applications. <strong>It is not a magic formula for hacking all corona apps across all versions of the sdk.</strong></p>
+<p><a href="/assets/archive/2015/02/2015-02-13-17-38-04.jpg"><img src="/assets/archive/2015/02/2015-02-13-17-38-04.jpg" alt="funrun2 hack"></a></p>
+<p>If you haven’t played funrun yet, you probably will soon. Funrun2 is one of the best multiplayer mobile games out there. It’s one of these rare games where you can have all the fun from the very first game you play, but still stays enjoyable after month of playing it. It’s my favorite game on mobile and since I had some spare time, I decided to tear it open (yeah, that’s what I do to things I like). It was a bit harder than expected and involves some not so trivial hacking as well as a bit of luck. By the way, yes, all these buttons work.</p>
+<h2 id="The-easy-part"><a href="#The-easy-part" class="headerlink" title="The easy part"></a>The easy part</h2><p>First I need to get my hands on the <em>.apk</em> file. There’s plenty of tools out there to do that, some of them are even <a href="https://github.com/Lekensteyn/apk-downloader" target="_blank" rel="noopener">open source</a>.</p>
+<p>An apk file is an archive, just like a jar or a zip so I can unpack it with regular unzipping tools. This gives me access to a <a href="http://en.wikipedia.org/wiki/Android_application_package" target="_blank" rel="noopener">well documented</a> directory structure. The two things I want are the <em>classes.dex</em> file, containing java bytecode, and the assets directory. Reversing the first one allows me to get access to java source code so it’s pretty obvious why I want to look at it.<br>To understand why the second one is interesting though, you must consider that this game was built with a cross platform framework, namely corona. These kind of framework generally allow you to code your app with some scripting language that gets executed on every platform the same way. Therefore, unless the script is cross compiled to native language (which nobody ever does), it must be stored somewhere. That’s when the assets folder comes to play. It contains only a few images and this <em>resource.car</em> file which extension conveniently matches Corona <em>ARchive</em>. How cool is that ?<br>I open the file in a text editor and mostly get binary-unreadable-shit but there’s also strings like “lua.whatever.that.is.lu”. There are the scripts.<br><em>In case you don’t know: <a href="http://www.lua.org/" target="_blank" rel="noopener">lua</a> is one of the main scripting languages used in games with it’s open-source libraries and tools.</em></p>
+<p>Now I still haven’t figured out where the images and sounds are (the corona archive weights a mere 2MB so it doesn’t contain any asset), but this will come later.</p>
+<h2 id="Things-getting-interesting"><a href="#Things-getting-interesting" class="headerlink" title="Things getting interesting"></a>Things getting interesting</h2><p>Trying to open the corona archive, I quickly realize it’s not a common archive format (even 7-zip can’t open it !). So there are two ways to go: finding the loading procedure in the java code or analyzing the file structure by hand. The first seems more reasonable.<br>But first, let’s decompile the dalvik bytecode into human readable java. These tools are helpful: <a href="https://code.google.com/p/dex2jar/" target="_blank" rel="noopener">dex2jar</a> to covert the <em>.dex</em> to <em>.class</em> (<a href="http://en.wikipedia.org/wiki/Dalvik_%28software%29" target="_blank" rel="noopener">dalvik</a> to <a href="http://en.wikipedia.org/wiki/Java_virtual_machine" target="_blank" rel="noopener">jvm</a>) and <a href="http://jd.benow.ca/" target="_blank" rel="noopener">jd</a> to go back to plain java source code.</p>
+<p>Now I have a load of java source code to look into, great! Let’s look for the string “resource.car”: no results. Looking manually, I quickly find corona’s source code in com/ansca/corona, that’s where the magic must happen. However, nothing is nearly dealing with a “resource” nor a “.car” file. I find however references to images. They were actually located on the device’s external storage (sdcard/Android/obb) in a <em>.obb</em> file. This is something common on android devices (that I wasn’t aware of before doing this hack), my guess is that moving resources allows the apk to be lighter and makes the internal memory footprint smaller. A <em>.obb</em> file is just a zip with a fancy extension. I can grab this file on a computer, edit the images/sounds/whatever and put it back in place. The game still runs with my custom images.</p>
+<p>[caption id=”attachment_177” align=”aligncenter” width=”700”]<a href="/assets/archive/2015/02/2015-02-13-17-54-08.jpg"><img src="/assets/archive/2015/02/2015-02-13-17-54-08.jpg" alt="funrun_image"></a> Besides adding childish drawings to the game, there’s not much that can be done this way.[/caption]</p>
+<p>I’m in a dead-end with the java code. Let’s give a shot at manually reversing the resource.car file:</p>
+<p>I open it with a hex editor and quickly realize the format used is trivial:</p>
+<p>First, a header <del>to rule them all</del>, then comes an index made of each file name + position (address) of it’s contents in the archive, then comes the data block with each file contents.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[header] 16 bytes</span><br><span class="line"></span><br><span class="line">[index]</span><br><span class="line">  [entry]</span><br><span class="line">   [header] (4 bytes) 1</span><br><span class="line">   [block addr] (4 bytes)</span><br><span class="line">   [nameS] (4 bytes)</span><br><span class="line">   [name] (nameS+1 bytes) 0-terminated</span><br><span class="line">   [padding] (0s to complete 4x addr)</span><br><span class="line"></span><br><span class="line">[files]</span><br><span class="line">  [entry]</span><br><span class="line">    [header] (4 bytes) 2</span><br><span class="line">    [??] (4 bytes)</span><br><span class="line">    [size] (4 bytes)</span><br><span class="line">    [file] (no 0 termination)</span><br><span class="line">    [padding] (to next 4x addr)</span><br></pre></td></tr></table></figure></p>
+<p><em>The resource.car file format</em></p>
+<p>Now I didn’t have to code a packer for this format myself because luckily, someone already did that. So I grabbed this <em>corona archive packer/unpacker</em> which you won’t find a link to on my blog.</p>
+<p>It turns out the archive contains uncompressed precompiled lua scripts, using luadec and then luac again you can decompile and then recompile these scripts which is very convenient. These lua scripts define absolutely every aspect of the game. From where a button might be to how fast a player can move and what a specific powerup does.<br>Injecting our custom resource.car in the app is a big deal because I could modify anything in the game.</p>
+<p>First I try modifying something inside the precompiled lua scripts, such as a string since we can easily recognize them. If this works, I can later try to recompile one file from the (modified) source.<br>I repack the resource and put it back in the apk file, sign it with dex2jar (as explained <a href="https://code.google.com/p/dex2jar/wiki/ModifyApkWithDexTool" target="_blank" rel="noopener">here</a>) and install it on my device. I launch the game and, with no real surprise, it crashes.</p>
+<p>I figured there’s probably some kind of check performed against the archive to guarantee integrity. However, the loader is nowhere to be found in the java source. This battle is lost but not the war.</p>
+<h2 id="Going-down"><a href="#Going-down" class="headerlink" title="Going down"></a>Going down</h2><p><a href="/assets/archive/2015/02/a88.jpg"><img src="/assets/archive/2015/02/a88.jpg" alt="a88"></a></p>
+<p>Yeah, maybe Di Caprio is right, we need to go low-level and find this resource loading procedure.<br>Inside the .apk, there’s another directory called “lib”. It contains architecture-specific libraries. You’d usually build a native library either when you have no choice but use C (for instance, lua is written in C) or when you want higher-than-java performances (for a game framework, it makes sense).</p>
+<p>In this lib folder, there’s some lua libraries, but also random libs for sound, video, analytics and whatever. Most importantly I find here a lib called <em>libcorona.so</em>. Let’s quickly open it with a text editor to search for the string “resource.car”, bingo!</p>
+<p>I’ll have to disassemble the lib in order to understand what’s happening in there. It turns out, there’s an amazing tool that does this and it’s called <a href="https://www.hex-rays.com/products/ida" target="_blank" rel="noopener">IDA</a>. It’s more than a cross-architecture disassembler, it does lot’s of stuff but for my purpose I’ll just use it as a disassembler. It handles libcorona very well and kindly gives us the assembly code.</p>
+<p><em>FYI: I picked the armeabi-v7a version so what follows would be different different with an apk targetting another platform</em></p>
+<p>I look again for the string “resource.car” and find it referenced at offset 0x1081D4.</p>
+<p>[caption id=”attachment_180” align=”aligncenter” width=”762”]<a href="/assets/archive/2015/02/res_car.png"><img src="/assets/archive/2015/02/res_car.png" alt="res_car"></a> The only piece of code referring to “resource.car”[/caption]</p>
+<p>&nbsp;</p>
+<p>It took me a while to figure out how things worked, but at some point i had a theory:<br>From the occurence of “resource.car”, I clearly see two execution paths: one that leads to a portion of code referencing the string <em>“could not verify”</em> and exiting, and one that leads to a subroutine that I deduced was meant to initialize the lua runtime or something like that. What stands between them is a fragile Branch No Equal (BNE) that we would like to turn into a rock solid Branch.</p>
+<p>[caption id=”attachment_181” align=”aligncenter” width=”761”]<a href="/assets/archive/2015/02/jump_annot.png"><img src="/assets/archive/2015/02/jump_annot.png" alt="jump_annot"></a> Take the yellow jump to get to the blue subroutine and avoid the nasty red branches[/caption]</p>
+<p>&nbsp;</p>
+<p>Looking at <a href="http://bear.ces.cwru.edu/eecs_382/ARM7-TDMI-manual-pt2.pdf" target="_blank" rel="noopener">this document</a> and some other branch instructions around in the code, I deduced that I needed to change byte x108247 from 1A to EA to turn my BNE into a B. Going back to my hex editor (I should really learn how to use IDA properly some day) I change the aforementioned value.</p>
+<p>[caption id=”attachment_182” align=”aligncenter” width=”715”]<a href="/assets/archive/2015/02/patched.png"><img src="/assets/archive/2015/02/patched.png" alt="patched"></a> It’s a branch![/caption]</p>
+<p>&nbsp;</p>
+<p>Now let’s pack our patched lib back into the apk, sign it, install it, run it… It runs! Let’s see if our custom value is used.</p>
+<p>[caption id=”attachment_185” align=”aligncenter” width=”700”]<a href="/assets/archive/2015/02/modded.jpg"><img src="/assets/archive/2015/02/modded.jpg" alt="modded"></a> First time ever a guessed binary patch works upon first try.[/caption]</p>
+<p>Let’s try the full pipeline: modify the lua source code, compile it, repack the .car and place it back in the .apk. It works provided we use the proper luac version (a quick search for the version string in liblua.so saves you the guessing). That’s it, the path is paved for hours of fun modding the game!</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>I had seen many game cheats and always wondered how they actually work, now I know at least for this one. To illustrate this article, I managed to strip all ads from the game, create a speed hack, fly mode, and unlimited powerups. Hacking the in-game money is harder because only the server issues coins, so even if you trick your phone into thinking you are rich, the server knows how much you really have.<br>I’d like to emphasis that I personally think buying or downloading a cheat for a game is lame and those who do that just deserve a trojan. However, hacking a game is really something fun that one should try. It requires patience, and a capability to keep a clear mind even after hours of work leading nowhere.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/" data-id="cjh6d84cb000el3yhdpftrql9" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2015/02/00-hacking-funrun2-how-to-reverse-engineer-a-corona-app/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/">android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/funrun/">funrun</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/funrun2/">funrun2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hack/">hack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/reverse-engineering/">reverse engineering</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-archive/sailsjs-tutorial-expenses-tracking-app-part-4" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-4/" class="article-date">
@@ -221,72 +300,11 @@
 
 
   
-    <article id="post-archive/sailsjs-tutorial-expenses-tracking-app-part-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/" class="article-date">
-  <time datetime="2014-12-07T14:33:56.000Z" itemprop="datePublished">2014-12-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/archived/">archived</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/">SailsJS tutorial &amp;#124; expenses tracking app (Part 2/4)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In the <a href="http://blog.hmil.fr/2014/12/sailsjs-tutorial-expenses-tracking-app-part-1/" target="_blank" rel="noopener">previous part</a>, we set up our application and added an authentication mechanism. It is now time to add our custom views and style. We will also use this opportunity to add dynamic content that changes when the user is logged in and an app page that can only be accessed by logged-in users (using policies).</p>
-<h2 id="Adding-custom-views"><a href="#Adding-custom-views" class="headerlink" title="Adding custom views"></a>Adding custom views</h2><p>Download <a href="http://hmil.fr/public/sails_tuto_0.zip" target="_blank" rel="noopener">this archive</a> containing the files you’ll need in this part.</p>
-<p>Copy the contents of <em>styles</em> in the <em>assets/styles/</em> folder of your project and the <em>views</em> in <em>views/</em>. Replace any file that causes a conflict, we don’t need the defaults anymore ;) .</p>
-<p>You may have noticed these comments in <em>view/layout.ejs</em><br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">&lt;!--STYLES--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--STYLES END--&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>When you start sails, it will automatically watch for changes in your assets/ directory and link your stylesheets by adding the appropriate HTML tags there. This is done <em>via</em> grunt, you can have a look at the <em>tasks/</em> folder if you are interested but we won’t detail much how these tasks work in this tutorial.</p>
-<p>Now lift your app and refresh your browser. You should see a homepage like the one in the <a href="http://expensiveapp.hmil.fr" target="_blank" rel="noopener">demo</a>. The first thing you’ll notice though is that the title and the description appear as ‘app_name’ and ‘app_desc’. It’s time to introduce you with locales.</p>
-<h2 id="Locales"><a href="#Locales" class="headerlink" title="Locales"></a>Locales</h2><p>If you look at <em>homepage.ejs</em>, you will see that the title and descriptions are wrapped in a call to ___()_ . This function will look at your locales and see if it finds a translation for that string in the user’s language. If it cannot find one, it will use the default locale, otherwise it displays the text as is. Locales files are simply JSON files, one per language, that establish a mapping between keys and translated strings. They are located in config/locales. Copy the locales provided in the project archive to this folder. Also since I’ve only included an English and French translation, you can delete the <em>es.json</em> and_ de.json _locales and add this line in <em>config/i18n.json</em><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">locales: [<span class="string">'en'</span>, <span class="string">'fr'</span>]</span><br></pre></td></tr></table></figure></p>
-<p>You’ll need to restart the app for these changes to be effective.</p>
-<h2 id="Showing-login-status"><a href="#Showing-login-status" class="headerlink" title="Showing login status"></a>Showing login status</h2><p>Now we’ll want our interface to change when the user is online. One thing we can do is displaying a <em>login</em> action in the navbar when the user is offline and a <em>logout</em> action when online. If you look at <em>layout.ejs</em> line 41 you should see a single login button. Let’s replace this with something more useful:</p>
-<p><pre lang="html" line="41"><br>&lt;% if (req.isAuthenticated()) { %&gt;<br>  <li><a href="/logout">Log out</a></li><br>&lt;% } else { %&gt;<br>  <li><a href="/login">Log in</a></li><br>&lt;% } %&gt;</pre></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">As you can see, we have access to the request object _req_ from the view and therefore we can know things about our user. Here we want to know if he is authenticated. Now you may wonder where this _isAuthenticated_ method comes from. We actually need to attach it to the req object. The best place to do this is in passport&apos;s policy since we apply this policy everywhere (remember it just allows us to initialize authentication stuff for the current request, it doesn&apos;t actually perform any kind of check). We add this function before calling _next()_ in _api/policies/passport.js_ so that it looks like this:</span><br><span class="line">```javascript</span><br><span class="line"></span><br><span class="line">module.exports = function (req, res, next) &#123;</span><br><span class="line">  // Initialize Passport</span><br><span class="line">  passport.initialize()(req, res, function () &#123;</span><br><span class="line">    // Use the built-in sessions</span><br><span class="line">    passport.session()(req, res, function () &#123;</span><br><span class="line">      // Make the user available throughout the frontend</span><br><span class="line">      res.locals.user = req.user;</span><br><span class="line"></span><br><span class="line">      req.isAuthenticated = function() &#123;</span><br><span class="line">        return req.user != null;</span><br><span class="line">      &#125;;</span><br><span class="line"></span><br><span class="line">      next();</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>Ok now restart your app, navigate to localhost:1337, log-in<br>Aaannnd it doesn’t work again…</p>
-<p>Before you start throwing virtual stuff at me, just read why it went wrong:<br>If you look at your routes (<em>/config/routes.js</em>), you’ll see that our homepage view is served directly. This means the view is rendered without the request passing through any controller action. But <strong>policies are only applied to action routes!</strong> So we’ll need to create an action to display the home page since we want our passport policy to apply.<br>Using the command line, be sure to be at the root of your project and run<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sails generate controller main index app</span><br></pre></td></tr></table></figure></p>
-<p>This generates a controller called main with two actions index and app. We’ll use index to show the homepage and app to show the actual application page.<br>Open your newly created <em>MainController</em> (under <em>api/controllers/</em>) and replace the index action with the following:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">index: <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> res.view(<span class="string">'homepage'</span>);</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure></p>
-<p>Then last thing to do is tell sails to call our controller action when a user reaches ‘/‘. To do this, in <em>config/routes.js</em> remove the value assigned to ‘/‘ and add the following instead:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="string">'/'</span>: <span class="string">'MainController.index'</span>,</span><br><span class="line"><span class="string">'/app'</span>: <span class="string">'MainController.app'</span>,</span><br></pre></td></tr></table></figure></p>
-<p>Note that we are also binding another route that will be useful later.</p>
-<p>Now everything should work fine. Try logging-in and out a few times, the navbar updates accordingly.</p>
-<p>All right, now we have our custom styles implemented and a basic layout for the app. We can start focusing on the core of the app. In the next part, we will create models and APIs to interact with data relevant to our app and we’ll implement access control to make this a little more secure.</p>
-<p><a href="http://blog.hmil.fr/2014/12/sailsjs-tutorial-expenses-tracking-app-part-3" target="_blank" rel="noopener"><strong>Read the next part!</strong></a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/" data-id="cjh6d84dg001wl3yhg8srtnuw" class="article-share-link">Share</a>
-      
-        <a href="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
+    <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -307,7 +325,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 15px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 15px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a>
+      <a href="/tags/GitHub/" style="font-size: 10px;">GitHub</a> <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 15px;">architecture</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 15px;">monorepo</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a> <a href="/tags/satire/" style="font-size: 10px;">satire</a>
     </div>
   </div>
 
@@ -329,6 +347,10 @@
       <ul>
         
           <li>
+            <a href="/2018/05/The-github-etiquette/">How not to suck at GitHub</a>
+          </li>
+        
+          <li>
             <a href="/2018/05/TypeScript-project-structure2/">How to manage and publish a multi-package TypeScript project</a>
           </li>
         
@@ -342,10 +364,6 @@
         
           <li>
             <a href="/2016/10/archive/you-should-worry-about-vary/">You should worry about Vary</a>
-          </li>
-        
-          <li>
-            <a href="/2015/11/archive/githubs-merge-pull-request-is-wrong/">GitHub&#39;s &#34;merge pull request&#34; is wrong</a>
           </li>
         
       </ul>

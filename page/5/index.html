@@ -6,11 +6,11 @@
   
 
   
-  <title>Archives | hmil&#39;s blog</title>
+  <title>hmil&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta property="og:type" content="website">
 <meta property="og:title" content="hmil&#39;s blog">
-<meta property="og:url" content="https://hmil.github.io/archives/page/2/index.html">
+<meta property="og:url" content="https://hmil.github.io/page/5/index.html">
 <meta property="og:site_name" content="hmil&#39;s blog">
 <meta property="og:locale" content="en">
 <meta name="twitter:card" content="summary">
@@ -67,80 +67,68 @@
       <div class="outer">
         <section id="main">
   
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2014" class="archive-year">2014</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-1/" class="archive-article-date">
-  <time datetime="2014-12-05T19:09:03.000Z" itemprop="datePublished">Dec 5</time>
+    <article id="post-archive/a-cli-tool-to-generate-badges" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/11/archive/a-cli-tool-to-generate-badges/" class="article-date">
+  <time datetime="2014-11-02T10:28:17.000Z" itemprop="datePublished">2014-11-02</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/archived/">archived</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
     <h1 itemprop="name">
-      <a class="archive-article-title" href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-1/">SailsJS tutorial &amp;#124; expenses tracking app (part 1/4)</a>
+      <a class="article-title" href="/2014/11/archive/a-cli-tool-to-generate-badges/">A cli tool to generate badges</a>
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2014/11/archive/cagificator-behind-the-scenes/" class="archive-article-date">
-  <time datetime="2014-11-19T17:33:58.000Z" itemprop="datePublished">Nov 19</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2014/11/archive/cagificator-behind-the-scenes/">Cagificator: behind the scenes</a>
-    </h1>
-  
+        <p>You may have noticed how CI badges are taking over on github. By CI badge, I mean this kind of things: <img src="https://raw.githubusercontent.com/hmil/node-project-badge/master/images/build-success.png" alt="[build passing]"><br>Build status, code coverage, package version, … There are badge for about everything.</p>
+<p>I wanted these badges for a school project where we had our own jenkins server running somewhere. The thing is, all of these badges come with the associated SaaS (like <a href="http://travis-ci.org" title="travis-ci" target="_blank" rel="noopener">travis</a> or <a href="https://coveralls.io/" title="coveralls" target="_blank" rel="noopener">coveralls</a>). I wanted a CLI tool to generate these on my server from a bash script and I couldn’t find that so I built it.</p>
+<hr>
+<p>The goal was to have one tool able to generate any kind of badge with a unified style and little configuration. There would be shared style settings and different badge <em>kinds</em> which would inherit these settings. Each <em>kind</em> would then take as few configuration as possible to cover all major use cases._ _It also had to be easily extendable so that anyone can add new <em>kinds</em> of badge.</p>
+<p>The solution I came up with was to render on an <a href="https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D" target="_blank" rel="noopener">html5 2D rendering context</a>. It is then possible to render badges in the browser or in node using the exact same code.</p>
+<p>&nbsp;</p>
+<p>From there, I just had to hook up <a href="https://github.com/Automattic/node-canvas" target="_blank" rel="noopener">node-canvas</a> with the existing library, translate CLI arguments to badge settings and that was it. A flexible CLI badge generator. I even added a few built-in configuration files to reduce the number of arguments required to generate popular badges.</p>
+<p>The only problem is that node-canvas uses a native library called <a href="http://cairographics.org/" target="_blank" rel="noopener">cairo</a>. This means you need to install this dependency separately. Also npm needs to build c code when you install the package and it can be a real pain depending on your platform.</p>
+<hr>
+<p>&nbsp;</p>
+<p>Detailed documentation and install instructions are available on github:</p>
+<ul>
+<li>The CLI tool (requires node and cairo): <a href="https://github.com/hmil/node-project-badge" target="_blank" rel="noopener">https://github.com/hmil/node-project-badge</a></li>
+<li>The underling framework: <a href="https://github.com/hmil/project-badge" target="_blank" rel="noopener">https://github.com/hmil/project-badge</a><br>They are both MIT-licensed. If you want to add built-in configs or badge kinds, just submit a pull request. All types of contribution are welcome.</li>
+</ul>
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2014/11/archive/a-cli-tool-to-generate-badges/" class="archive-article-date">
-  <time datetime="2014-11-02T10:28:17.000Z" itemprop="datePublished">Nov 2</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2014/11/archive/a-cli-tool-to-generate-badges/">A cli tool to generate badges</a>
-    </h1>
-  
-
-    </header>
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2014/11/archive/a-cli-tool-to-generate-badges/" data-id="cjh6d84d9001ll3yhzpac6hor" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2014/11/archive/a-cli-tool-to-generate-badges/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
   </div>
+  
 </article>
-  
-  
-    </div></section>
+
+
   
 
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/archives/">&laquo; Prev</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/page/4/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
   </nav>
 
 </section>
