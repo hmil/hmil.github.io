@@ -1,22 +1,24 @@
 ---
 title: How not to suck at GitHub
-date: 2018-05-16 17:00:00
+date: 2018-05-28 22:00:00
 id: 263
 categories:
-  - Uncategorized
+  - software engineering
 tags:
+  - satire
+  - GitHub
 ---
 
-So you learned a bit of programming and you know how to use git. You are ready to materialize your thoughts through the mighty power of code, and make it available to the whole world using the most popular open source social network on earth.
+So you learned a bit of programming and you know how to use git. You are ready to materialize your thoughts through the mighty power of code, and make your art available to the whole world using the most popular open source social network on earth.
 
 But you fear that you will make stupid mistakes and ruin your chance to become the next tech influencer. Rest assured, after reading this post you will know everything you need to know to make the most of Octocat's home.
 
-I will give you TODO tips to climb to the top 1% of GitHubbers faster than Lance Armstrong on steroids!
+I will give you 10 tips to climb to the top 1% of GitHubbers faster than [Pemba Dorje](https://en.wikipedia.org/wiki/Pemba_Dorje) on oxygen!
 
 
 ## 1. Don't look for alternatives
 
-If you think of a utility, library or a plug-in, you need to start coding your own solution straight away.
+If you think of a novel utility, library or a plug-in, you need to start coding your own solution straight away.
 
 You will only lose time looking for alternatives. You will find that prior art does not quite fit your requirements and, of course, you can not bend, even slightly, your problem definition to be solvable by existing solutions. Moreover, during this process, you may taint your original idea by looking at too many similar concepts, which will invariably worsen your design.
 
@@ -39,14 +41,14 @@ When you open an issue for a bug you've encountered (which should be about 2 min
 
 ## 5. Don't bother with the markup
 
-You've heard about [markdown](TODO link) but for your own sake you couldn't remember how to format code. Is it a &lt;code> tag? or maybe [code]? Or is it a back tick? Damn it!
+You've heard about [markdown](https://en.wikipedia.org/wiki/Markdown#Example) but for your own sake, you couldn't remember how to format code. Is it a &lt;code> tag? Or maybe [code]? Or is it a back tick? Damn it!
 
-Don't worry, no one does. Just forget about formatting your issue comment all together. Paste large blobs of code inline with your prose like you're writing lyrics for the next trap banger. After all, if the maintainer is not happy with your format, he can copy and paste it to a text editor.  
+Don't worry, no one does. Just forget about formatting your issue altogether. Paste large blobs of code inline with your prose like you're writing lyrics for the next trap banger. After all, if the maintainer is not happy with your format, he can copy and paste it to a text editor.  
 As a bonus, this way you don't even need to indent your code properly!
 
 ## 6. Refrain from using reactions
 
-It is outrageous that the GitHub team spent so much effort mimicking facebook with its stupid "reactions". Ugh... Anyway, when you feel like you agree (or even disagree) with a comment, be respectful and post an additional comment to voice your opinion while adding absolutely no useful piece of information to the debate. And please, please, please, leave that stupid "thumbs up" icon for social-network addicted kids.
+It is outrageous that the GitHub team spent so much effort mimicking facebook with its stupid "reactions". Ugh... Anyway, when you feel like you agree (or even disagree) with a comment, be respectful and post an additional comment to voice your opinion while adding absolutely no useful piece of information to the debate. And please, please, please, leave that stupid "thumbs up" button for social-network addicted kids.
 
 ## 7. DO NOT, ever, submit a pull request
 
@@ -57,12 +59,20 @@ Also, in order to preserve your ever so precious time, and avoid a painful publi
 
 Let's say there is this extremely useful feature you need, and the project seems a bit inactive lately. You **really** crave that feature and you can't wait for Mr. slowpoke to code it himself. As per point 1, you do not have time to write the software from scratch yourself. You realize that it will be a substantial change which will require quite a bit of code, but nothing can discourage you. You **need** that feature.
 
-Then make sure to secretly develop the feature without letting the maintainer know; otherwise he might try to cut the grass under your feet. Don't let anyone know you are working on this awesome addition until the very last moment when you submit your huge pull request as a single, solid, code change. *Wow* factor guaranteed!
+Then make sure to secretly develop the feature without letting the maintainer know; otherwise, he might try to cut the grass under your feet. Don't let anyone know you are working on this awesome addition until the very last moment when you submit your huge pull request as a single, solid, code change. *Wow* factor guaranteed!
 
 ## 9. Do not answer other people's questions
 
+As you contribute to repositories, you will notice other people try to drown your hard work under a deluge of irrelevant issues and comments. Don't think helping them will make them go away; they will invariably come back with more.
 
+Instead, keep a cool head and refrain from helping. If needed, "up" your own issue by asking for updates.
 
 ## 10. Use issues as a general purpose Q&A place
 
+As we've covered in point number 2, you will not find answers on StackOverflow. What's more, its elevator system tends to reorder comments in an annoying way which breaks chronological order.  
 
+Therefore, if you have anything to say, which is even remotely connected to a project, then go ahead and express yourself using that project's issues. This will notify **everyone** who watches the repository and guarantee maximum exposure of your comment.
+
+---
+
+Hope you liked these tips. Please feel free to contribute your own in the comments!
