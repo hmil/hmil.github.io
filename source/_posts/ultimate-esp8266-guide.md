@@ -9,7 +9,7 @@ tags:
   - nodeMCU
 categories:
   - embedded
-date: TBD
+date: 2018-07-21 17:00:00
 ---
 
 ## What is the ESP8266?
