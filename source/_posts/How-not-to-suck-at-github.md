@@ -5,7 +5,7 @@ id: 263
 categories:
   - software engineering
 tags:
-  - satire
+  - rant
   - GitHub
 ---
 
