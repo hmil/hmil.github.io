@@ -8,7 +8,7 @@ tags:
   - arduino
   - nodeMCU
 categories:
-  - embedded
+  - IoT
 date: 2018-07-21 17:00:00
 ---
 
