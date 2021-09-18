@@ -67,6 +67,150 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-how-ui-frameworks-grab-control" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/09/how-ui-frameworks-grab-control/" class="article-date">
+  <time datetime="2021-09-17T18:00:00.000Z" itemprop="datePublished">2021-09-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/software-engineering/">software engineering</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/09/how-ui-frameworks-grab-control/">How to grab control: 4 tactics used by UI libraries</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we explore tactics used by maintream UI libraries to obtain control.</p>
+<h2 id="What-is-control"><a href="#What-is-control" class="headerlink" title="What is control?"></a>What is control?</h2><p>Take a look at the following code snippet which uses the native browser APIs.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params">model</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// Create an element</span></span><br><span class="line">    <span class="keyword">const</span> element = <span class="built_in">document</span>.createElement(<span class="string">'div'</span>);</span><br><span class="line">    <span class="built_in">document</span>.body.appendChild(element);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Update the element's style</span></span><br><span class="line">    element.style.setProperty(<span class="string">'background-color'</span>, <span class="string">'blue'</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Add some text</span></span><br><span class="line">    <span class="keyword">const</span> text = <span class="built_in">document</span>.createTextNode(<span class="string">`Welcome to <span class="subst">$&#123;model.city&#125;</span>!`</span>);</span><br><span class="line">    element.appendChild(text);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The web does not natively provide a way to <em>describe</em> what the UI should look like. The only thing it offers is a set of instructions to modify the document.</p>
+<p><strong>Therefore, if you want something to change on the screen, some code needs to run to make those changes. The browser can’t perform those changes automatically.</strong></p>
+<p>Most modern UI libraries let you express your application in a declarative way. Any code written with such library can be boiled down to this:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// UI code written with a modern library generally boils down to some state and a view.</span></span><br><span class="line"><span class="comment">// The view uses the state.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> state = &#123;</span><br><span class="line">    city: <span class="string">'London'</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> view = &lt;div style=&#123;&#123; backgroundColor: 'blue' &#125;&#125;&gt;</span><br><span class="line">    Welcome to &#123;state.city&#125;!</span><br><span class="line">&lt;/div&gt;;</span><br></pre></td></tr></table></figure>
+<p>The library promises that, whenever you make changes to your state, it will take care of updating the view automatically for you.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Updating the model will "magically" update the view as well</span></span><br><span class="line">state.city = <span class="string">'Budapest'</span>;</span><br></pre></td></tr></table></figure>
+<p>But remember what we said earlier: The DOM cannot change unless some code runs to modify it. Our code above modified the model, but it did not modify the view. Consequently, the view didn’t get updated with the new state!</p>
+<p>If we wanted the view to refresh, we should be doing something like this:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Update the state</span></span><br><span class="line">state.city = <span class="string">'Budapest'</span>;</span><br><span class="line"><span class="comment">// Hand control over to the framework to re-render the view</span></span><br><span class="line">refresh();</span><br></pre></td></tr></table></figure>
+<p>The details of how to implement such <code>refresh</code> method aren’t important for this discussion. Suffices to know that it looks for changes in the state, and then make the corresponding modifications to the document using imperative browser API calls.</p>
+<p><strong>All UI frameworks require some kind of refresh function like this.</strong> There is no way to get away from it, because as we said earlier: some code needs to run to modify the document!</p>
+<p>But having to call a refresh function manually isn’t very practical and breaks the illusion that the model is <em>stuck</em> to the view (we call this illusion <em>data binding</em>). What we want is for this refresh function to somehow be invoked <strong>automatically</strong>.</p>
+<p><em>This</em> is the paradox of control: the user never needs to explicitly hand control over to the framework, and yet some code <em>has</em> to run for the view to refresh!</p>
+<p><strong>If the user is not invoking the refresh function, then who is?</strong></p>
+<h2 id="React-Keeping-it-simple"><a href="#React-Keeping-it-simple" class="headerlink" title="React: Keeping it simple"></a>React: Keeping it simple</h2><p>There are many ways to solve this paradox. The first one we’ll study is perhaps the easiest to understand and it is most famously implemented by React.</p>
+<p>In React, it is still the user’s responsibility to call the refresh function. The catch is that the refresh function is hidden in ordinary calls to React APIs.</p>
+<p>For instance state cannot be defined anywhere, it must be defined in a component’s <code>state</code> property, and you must use <code>setState</code> (or the equivalent hook) to update it.</p>
+<p>When you invoke <code>setState</code>, you incidentally pass <strong>control</strong> over to React, and give it an opportunity to re-render.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Without React:</span></span><br><span class="line">state.city = <span class="string">'Budapest'</span>; <span class="comment">// Set the state</span></span><br><span class="line">refresh(); <span class="comment">// Then refresh</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// With React: Set the state and refresh in a single call</span></span><br><span class="line">setState(&#123; <span class="attr">city</span>: <span class="string">'Budapest'</span>&#125;);</span><br></pre></td></tr></table></figure>
+<p>Of course, React doesn’t immediately re-render the view when you call <code>setState</code>. Instead, it schedules a refresh to be performed on the next frame, such that all modifications happening during this frame can be batched into a single render pass.</p>
+<p>This explains why direct mutations of state are not allowed in React. When you do this, then React has no opportunity to schedule a re-render of the view.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// We don't hand control over to react after this assignment</span></span><br><span class="line"><span class="comment">// so it has no opportunity to re-render the view!</span></span><br><span class="line">state.city = <span class="string">'Paris'</span>;</span><br></pre></td></tr></table></figure>
+<p><em>note: Control is just one of multiple reasons why React doesn’t like mutable state. But the other reasons are beyond the scope of this post.</em></p>
+<h2 id="Angular-Big-Brother-Is-Watching-You"><a href="#Angular-Big-Brother-Is-Watching-You" class="headerlink" title="Angular: Big Brother Is Watching You"></a>Angular: Big Brother Is Watching You</h2><p>As we saw, React politely waits until the developer hands control over to the framework. Meanwhile, Angular is going for a dramatically different route.</p>
+<p>Angular instruments the complete browser runtime to make sure that it <strong>always</strong> acquire control before user code!</p>
+<p>Yes, you read that right. Let me illustrate that with an example, in case your brain is actively blocking the meaning of the above sentence to save your sanity.</p>
+<p>Say we want to know whenever user code runs as a result of a <code>setTimeout</code> timer expiring. We can do this by replacing the global function with ours.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> originalSetTimeout = <span class="built_in">window</span>.setTimeout;</span><br><span class="line"><span class="built_in">window</span>.setTimeout = <span class="function">(<span class="params">cb</span>) =&gt;</span> &#123;</span><br><span class="line">    originalSetTimeout(wrap(cb), ...arguments.slice(<span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">wrap</span>(<span class="params">cb</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'THE USER CODE IS ABOUT TO RUN!'</span>);</span><br><span class="line">        cb(...arguments);</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'THE USER CODE HAS FINISHED RUNNING!'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The practice of replacing a function like that is called monkey patching or sometimes also swizzling.</p>
+<p>Now if we have user code like this…</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'Going to a different city'</span>);</span><br><span class="line">    state.city = <span class="string">'Berlin'</span>;</span><br><span class="line">&#125;, <span class="number">10000</span>);</span><br></pre></td></tr></table></figure>
+<p>…there is no need to hand control back to Angular after the state modification, because Angular already had control all along!</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">THE USER CODE IS ABOUT TO RUN!</span><br><span class="line">Going to a different city</span><br><span class="line">THE USER CODE HAS FINISHED RUNNING!</span><br></pre></td></tr></table></figure>
+<p>We could use this technique to trigger a new render when the user callback is invoked:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">wrap</span>(<span class="params">cb</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        cb(...arguments);</span><br><span class="line">        <span class="comment">// The user code most likely modified something.</span></span><br><span class="line">        <span class="comment">// So let's schedule a render just in case.</span></span><br><span class="line">        refresh();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Now, this is just for <code>setTimeout</code>. But imagine we did this for <em>every single entry point in the browser API</em>: All event handlers like <code>addEventListener</code>, network apis like <code>fetch</code> and <code>XMLHttpRequest</code>, all message passing, timers, etc… If we covered all of the native APIs, then there would be no way at all for user code to escape our surveillance!</p>
+<p>Well that’s exactly what Angular does. Anytime user code runs, Angular knows about it and it attempts to re-render the view in case any state has changed.</p>
+<blockquote>
+<p>Angular is the Big Brother of the runtime.</p>
+</blockquote>
+<h2 id="Vue-High-tech-black-magic"><a href="#Vue-High-tech-black-magic" class="headerlink" title="Vue: High tech black magic"></a>Vue: High tech black magic</h2><p>Vue’s solution to the control paradox is closer to React than it is to Angular.</p>
+<p>Like React, vue requires that you tell it about the state you are going to use.</p>
+<p>Unlike React, once you have declared your state, vue doesn’t require you to invoke a special function to modify your state.</p>
+<p>In <em>abstract</em> terms, vue code kind of looks like this:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> state = createSomeStateWithVue(&#123;</span><br><span class="line">    city: <span class="string">'London'</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Now I am free to modify my state however I want</span></span><br><span class="line">state.city = <span class="string">'Lausanne'</span>;</span><br></pre></td></tr></table></figure>
+<p>Now if you are anything like me, this should look suspicious. How on earth is vue able to tell when properties on the state are modified? If it’s not instrumenting the runtime like Angular, then it cannot know that code was running. But since no function of the framework is invoked, the framework never obtains control to perform the refresh. So how is it possible that vue still manages to keep the view in sync with the model?!</p>
+<p>The answer is: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy" target="_blank" rel="noopener">Proxies</a>.</p>
+<p>A proxy works by wrapping an object into some sort of magic sensor which can detect whenever the object is read, written to or called.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createSomeStateWithVue</span>(<span class="params">original</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Proxy</span>(original, &#123;</span><br><span class="line">        set(target, prop, value) &#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">`Property <span class="subst">$&#123;prop&#125;</span> was set to <span class="subst">$&#123;value&#125;</span>.`</span>);</span><br><span class="line">            <span class="keyword">const</span> ret =  <span class="built_in">Reflect</span>.set(...arguments);</span><br><span class="line">            refresh();</span><br><span class="line">            <span class="keyword">return</span> ret;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Now, when the user tries to write to any property of the model, the <code>set</code> function is going to be invoked.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Calls the setter and prints "Property city was set to Tallinn"</span></span><br><span class="line">model.city = <span class="string">'Tallinn'</span>;</span><br><span class="line"><span class="comment">// no need to call `refresh()` here because</span></span><br><span class="line"><span class="comment">// it was already called while we were setting the property.</span></span><br></pre></td></tr></table></figure>
+<h2 id="Svelte-A-smarter-way"><a href="#Svelte-A-smarter-way" class="headerlink" title="Svelte: A smarter way"></a>Svelte: A smarter way</h2><p>Last in our list, Svelte comes with yet another completely different solution from all previous frameworks.</p>
+<p>In short, what Vue does at runtime, Svelte does it at compile time.</p>
+<p>Svelte uses a compiler to transform the source code ahead of time, before shipping it to the browser.</p>
+<p>How does this relate to the problem of control? With the compiler, svelte can find out all state mutations and annotate them.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// This code:</span></span><br><span class="line">model.city = <span class="string">'London'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Gets compiled into:</span></span><br><span class="line">model.city = <span class="string">'London'</span>; refresh();</span><br></pre></td></tr></table></figure>
+<p>It essentially injects the refresh calls for you, where they are needed.</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>The paradox of control is one of the many problems UI frameworks and libraries solve, and it wouldn’t make a ton of sense to compare all frameworks side by side based only on this information. Interesting synergies arise when multiple problems get solved together by a framework. </p>
+<p>For instance, React’s love for immutable state is not just about control, but it also plays a central role to optimize rendering of the component tree and offers advantages for code analysis and debugging.<br>Similarly, the primary goal of Svelte’s compiler isn’t to inject the <code>refresh</code> calls. This is just the cherry on top of the actual value brought by the compiler, which is eliminating the need for a runtime library and virtual DOM.</p>
+<p>But in my opinion understanding how a library solves the paradox of control is the key to understanding how it works as a whole. It is the very core of the system, and every other technical decision seems to follow from it as an unavoidable consequence.</p>
+<p>As a gift for sticking by until the end, I’ll leave you with this table which recaps the strategy used by each framework and the strengths and weaknesses inherent of each strategy.</p>
+<table>
+<thead>
+<tr>
+<th>Library</th>
+<th>Strategy</th>
+<th>Pros</th>
+<th>Cons</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>React</td>
+<td>User must call a React entry point</td>
+<td>Simple solution.</td>
+<td>Requires immutability and managed state. Harder for beginners and makes some things more difficult.</td>
+</tr>
+<tr>
+<td>Angular</td>
+<td>Instrument the entire runtime</td>
+<td>Guaranteed to always work. State can be stored anywhere.</td>
+<td>Very heavy solution. The framework needs to keep up with new web APIs.</td>
+</tr>
+<tr>
+<td>Vue</td>
+<td>Proxy the model</td>
+<td>Almost as simple as React, works almost as well as Angular.</td>
+<td>Not quite as simple as React. State needs to be handled in a way the Proxy can understand.</td>
+</tr>
+<tr>
+<td>Svelte</td>
+<td>Compiler instruments code</td>
+<td>Lightweight, should work as well as vue.</td>
+<td>Requires a compile-time step. State needs to be handled in a way the compiler can understand.</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2021/09/how-ui-frameworks-grab-control/" data-id="cktpxkl4t0000e98mgoak7do3" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2021/09/how-ui-frameworks-grab-control/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Angular/">Angular</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/">JavaScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Svelte/">Svelte</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/">Vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-game-of-pong-on-esp8266" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/03/game-of-pong-on-esp8266/" class="article-date">
@@ -293,77 +437,11 @@
 
 
   
-    <article id="post-How-not-to-suck-at-github" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/How-not-to-suck-at-github/" class="article-date">
-  <time datetime="2018-05-28T20:00:00.000Z" itemprop="datePublished">2018-05-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/software-engineering/">software engineering</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/How-not-to-suck-at-github/">How not to suck at GitHub</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>So you learned a bit of programming and you know how to use git. You are ready to materialize your thoughts through the mighty power of code, and make your art available to the whole world using the most popular open source social network on earth.</p>
-<p>But you fear that you will make stupid mistakes and ruin your chance to become the next tech influencer. Rest assured, after reading this post you will know everything you need to know to make the most of Octocat’s home.</p>
-<p>I will give you 10 tips to make it to the top faster than <a href="https://en.wikipedia.org/wiki/Pemba_Dorje" target="_blank" rel="noopener">Pemba Dorje</a> on oxygen!</p>
-<h2 id="1-Don’t-look-for-alternatives"><a href="#1-Don’t-look-for-alternatives" class="headerlink" title="1. Don’t look for alternatives"></a>1. Don’t look for alternatives</h2><p>If you think of a novel utility, library or a plug-in, you need to start coding your own solution straight away.</p>
-<p>You will only lose time looking for alternatives. You will find that prior art does not quite fit your requirements. Of course, you can not bend your problem definition, even sligthly, so that existing solutions apply. Moreover, during this process you may taint your original idea by looking at too many similar concepts, which will invariably worsen your design.</p>
-<p>It would also be a huge waste of time trying to add a feature to an existing project. The legacy codebase of established projects is massive and messy. Just learning the relevant bits would take as much time as coding the whole solution from scratch anyway. And I’m not even talking about the near-infinite number of hours of work lost in feature requests which end up being rejected by the project owner after 3 months of silence.</p>
-<h2 id="2-Google-and-StackOverflow-won’t-help-you"><a href="#2-Google-and-StackOverflow-won’t-help-you" class="headerlink" title="2. Google and StackOverflow won’t help you"></a>2. Google and StackOverflow won’t help you</h2><p>Don’t waste your precious time googling for a solution. Most of the answers on StackOverflow are garbage anyway, and the library you are working with (and which is the root cause of your current issue of course) is not that popular. Hence, chances of finding the exact solution to your problem online are minimal.</p>
-<p>Instead, you better bother that project maintainer whose lack of QA considerations is causing your troubles. The project maintainer has the mental map of his project engraved in his memory at all times and can therefore figure out the solution to any problem near instantly. Plus, I suspect projet maintainers keep a secret list of known issues which they do not fix out of pure laziness, and that they actually wait until someone notices it to fix it.</p>
-<h2 id="3-Don’t-try-to-fix-it-yourself"><a href="#3-Don’t-try-to-fix-it-yourself" class="headerlink" title="3. Don’t try to fix it yourself"></a>3. Don’t try to fix it yourself</h2><p>This tip is similar to number 2. If a project you are using doesn’t work, it’s probably the maintainer’s fault. Don’t even bother looking for an answer in the project wiki or investigating the bug yourself. Just go ahead and nag the project maintainer. He or she will probably be able to fix their buggy project just for you.<br>Don’t forget to check back each day and notify the maintainer if he forgot to respond to your last message.</p>
-<h2 id="4-Be-as-vague-as-possible"><a href="#4-Be-as-vague-as-possible" class="headerlink" title="4. Be as vague as possible"></a>4. Be as vague as possible</h2><p>When you open an issue for a bug you’ve encountered (which should be about 2 minutes after you’ve noticed said bug if you follow the advice above), please do yourself a favor and describe your issue in as vague terms as possible. Don’t try to assess the cause of your problem. This way you avoid making a bad diagnosis and mislead the maintainer. Also, don’t post a snippet of your own code, system stats or installed libraries as it may leak sensitive information out to the public (remember hackers are constantly scraping GitHub for sensitive information!).</p>
-<h2 id="5-Don’t-bother-with-the-markup"><a href="#5-Don’t-bother-with-the-markup" class="headerlink" title="5. Don’t bother with the markup"></a>5. Don’t bother with the markup</h2><p>You’ve heard about <a href="https://en.wikipedia.org/wiki/Markdown#Example" target="_blank" rel="noopener">markdown</a> but for your own sake, you couldn’t remember how to format code. Is it a &lt;code&gt; tag? Or maybe [code]? Or is it a back tick? Damn it!</p>
-<p>Don’t worry, no one does. Just forget about formatting your issue altogether. Paste large blobs of code inline with your prose like you’re writing lyrics for the next trap banger. After all, if the maintainer is not happy with your format, he can copy and paste it to a text editor.<br>As a bonus, you don’t even need to indent your code when you proceed this way!</p>
-<h2 id="6-Refrain-from-using-reactions"><a href="#6-Refrain-from-using-reactions" class="headerlink" title="6. Refrain from using reactions"></a>6. Refrain from using reactions</h2><p>It is outrageous that the GitHub team spent so much effort mimicking facebook with its stupid “reactions”. Ugh… Anyway, when you feel like you agree (or even disagree) with a comment, be respectful and post an additional comment to voice your opinion while adding absolutely no useful piece of information to the debate. And please, please, please, leave that stupid “thumbs up” button for social-network addicted kids.</p>
-<h2 id="7-DO-NOT-ever-submit-a-pull-request"><a href="#7-DO-NOT-ever-submit-a-pull-request" class="headerlink" title="7. DO NOT, ever, submit a pull request"></a>7. DO NOT, ever, submit a pull request</h2><p>Everyone knows project maintainers hate it when someone tries to touch their code. After all, why are they constantly finding excuses to reject pull requests?<br>Also, in order to preserve your ever so precious time, and avoid a painful public shaming, do not attempt to contribute code to an open source project.</p>
-<h2 id="8-If-you-ever-should-submit-code-don’t-ask"><a href="#8-If-you-ever-should-submit-code-don’t-ask" class="headerlink" title="8. If you ever should submit code, don’t ask!"></a>8. If you ever should submit code, don’t ask!</h2><p>Let’s say there is this extremely useful feature you need, and the project seems a bit inactive lately. You <strong>really</strong> crave that feature and you can’t wait for Mr. slowpoke to code it himself. Despite point 1, you do not have time to write new software from scratch. You realize that it will be a substantial change which will require quite a bit of code, but nothing can discourage you. You <strong>need</strong> that feature.</p>
-<p>Then make sure to secretly develop the feature without letting the maintainer know; otherwise, he or she might try to cut the grass under your feet. Don’t let anyone know you are working on this awesome addition until the very last moment when you submit your huge pull request as a single, solid, code change. <em>Wow</em> factor guaranteed!</p>
-<h2 id="9-Do-not-answer-other-people’s-questions"><a href="#9-Do-not-answer-other-people’s-questions" class="headerlink" title="9. Do not answer other people’s questions"></a>9. Do not answer other people’s questions</h2><p>As you contribute to repositories, you will notice other people try to drown your hard work under a deluge of irrelevant issues and comments. Don’t think helping them will make them go away; they will invariably come back with more.</p>
-<p>Instead, keep a cool head and refrain from helping. If needed, “up” your own issue to make sure it stays on top.</p>
-<h2 id="10-Use-issues-as-a-general-purpose-Q-amp-A-place"><a href="#10-Use-issues-as-a-general-purpose-Q-amp-A-place" class="headerlink" title="10. Use issues as a general purpose Q&amp;A place"></a>10. Use issues as a general purpose Q&amp;A place</h2><p>As we’ve covered in point number 2, you will not find answers on StackOverflow. What’s more, its elevator system tends to reorder comments in an annoying way which breaks chronological order.  </p>
-<p>Therefore, if you have anything to say which is even remotely connected to a project, then go ahead and express yourself using the issues section. This will notify <strong>everyone</strong> who watches the repository and guarantee maximum exposure of your comment.</p>
-<hr>
-<p>Hope you liked these tips. Please feel free to contribute your own in the comments!</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://hmil.github.io/2018/05/How-not-to-suck-at-github/" data-id="ck7t2z62h000h4nxoid3a5b31" class="article-share-link">Share</a>
-      
-        <a href="https://hmil.github.io/2018/05/How-not-to-suck-at-github/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GitHub/">GitHub</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rant/">rant</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
     
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -384,7 +462,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ESP8266/" style="font-size: 15px;">ESP8266</a> <a href="/tags/GitHub/" style="font-size: 10px;">GitHub</a> <a href="/tags/IoT/" style="font-size: 15px;">IoT</a> <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 15px;">architecture</a> <a href="/tags/arduino/" style="font-size: 15px;">arduino</a> <a href="/tags/embedded/" style="font-size: 10px;">embedded</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 15px;">monorepo</a> <a href="/tags/nodeMCU/" style="font-size: 15px;">nodeMCU</a> <a href="/tags/rant/" style="font-size: 10px;">rant</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a> <a href="/tags/wifi/" style="font-size: 15px;">wifi</a>
+      <a href="/tags/Angular/" style="font-size: 10px;">Angular</a> <a href="/tags/ESP8266/" style="font-size: 15px;">ESP8266</a> <a href="/tags/GitHub/" style="font-size: 10px;">GitHub</a> <a href="/tags/IoT/" style="font-size: 15px;">IoT</a> <a href="/tags/JavaScript/" style="font-size: 10px;">JavaScript</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/Svelte/" style="font-size: 10px;">Svelte</a> <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 15px;">architecture</a> <a href="/tags/arduino/" style="font-size: 15px;">arduino</a> <a href="/tags/embedded/" style="font-size: 10px;">embedded</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 15px;">monorepo</a> <a href="/tags/nodeMCU/" style="font-size: 15px;">nodeMCU</a> <a href="/tags/rant/" style="font-size: 10px;">rant</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a> <a href="/tags/wifi/" style="font-size: 15px;">wifi</a>
     </div>
   </div>
 
@@ -393,7 +471,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">September 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
     </div>
   </div>
 
@@ -404,6 +482,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/09/how-ui-frameworks-grab-control/">How to grab control: 4 tactics used by UI libraries</a>
+          </li>
         
           <li>
             <a href="/2020/03/game-of-pong-on-esp8266/">A multiplayer game of pong on the ESP8266</a>
@@ -421,10 +503,6 @@
             <a href="/2018/05/TypeScript-project-structure2/">How to manage and publish a multi-package TypeScript project</a>
           </li>
         
-          <li>
-            <a href="/2018/03/TypeScript-project-structure/">Tips and tricks to structure multi-package TypeScript projects</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -437,7 +515,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2020 Hadrien Milano<br>
+      &copy; 2021 Hadrien Milano<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

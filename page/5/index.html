@@ -67,6 +67,67 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-archive/sailsjs-tutorial-expenses-tracking-app-part-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/" class="article-date">
+  <time datetime="2014-12-07T14:33:56.000Z" itemprop="datePublished">2014-12-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/archived/">archived</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/">SailsJS tutorial &amp;#124; expenses tracking app (Part 2/4)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="http://blog.hmil.fr/2014/12/sailsjs-tutorial-expenses-tracking-app-part-1/" target="_blank" rel="noopener">previous part</a>, we set up our application and added an authentication mechanism. It is now time to add our custom views and style. We will also use this opportunity to add dynamic content that changes when the user is logged in and an app page that can only be accessed by logged-in users (using policies).</p>
+<h2 id="Adding-custom-views"><a href="#Adding-custom-views" class="headerlink" title="Adding custom views"></a>Adding custom views</h2><p>Download <a href="http://hmil.fr/public/sails_tuto_0.zip" target="_blank" rel="noopener">this archive</a> containing the files you’ll need in this part.</p>
+<p>Copy the contents of <em>styles</em> in the <em>assets/styles/</em> folder of your project and the <em>views</em> in <em>views/</em>. Replace any file that causes a conflict, we don’t need the defaults anymore ;) .</p>
+<p>You may have noticed these comments in <em>view/layout.ejs</em><br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">&lt;!--STYLES--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--STYLES END--&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>When you start sails, it will automatically watch for changes in your assets/ directory and link your stylesheets by adding the appropriate HTML tags there. This is done <em>via</em> grunt, you can have a look at the <em>tasks/</em> folder if you are interested but we won’t detail much how these tasks work in this tutorial.</p>
+<p>Now lift your app and refresh your browser. You should see a homepage like the one in the <a href="http://expensiveapp.hmil.fr" target="_blank" rel="noopener">demo</a>. The first thing you’ll notice though is that the title and the description appear as ‘app_name’ and ‘app_desc’. It’s time to introduce you with locales.</p>
+<h2 id="Locales"><a href="#Locales" class="headerlink" title="Locales"></a>Locales</h2><p>If you look at <em>homepage.ejs</em>, you will see that the title and descriptions are wrapped in a call to ___()_ . This function will look at your locales and see if it finds a translation for that string in the user’s language. If it cannot find one, it will use the default locale, otherwise it displays the text as is. Locales files are simply JSON files, one per language, that establish a mapping between keys and translated strings. They are located in config/locales. Copy the locales provided in the project archive to this folder. Also since I’ve only included an English and French translation, you can delete the <em>es.json</em> and_ de.json _locales and add this line in <em>config/i18n.json</em><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">locales: [<span class="string">'en'</span>, <span class="string">'fr'</span>]</span><br></pre></td></tr></table></figure></p>
+<p>You’ll need to restart the app for these changes to be effective.</p>
+<h2 id="Showing-login-status"><a href="#Showing-login-status" class="headerlink" title="Showing login status"></a>Showing login status</h2><p>Now we’ll want our interface to change when the user is online. One thing we can do is displaying a <em>login</em> action in the navbar when the user is offline and a <em>logout</em> action when online. If you look at <em>layout.ejs</em> line 41 you should see a single login button. Let’s replace this with something more useful:</p>
+<p><pre lang="html" line="41"><br>&lt;% if (req.isAuthenticated()) { %&gt;<br>  <li><a href="/logout">Log out</a></li><br>&lt;% } else { %&gt;<br>  <li><a href="/login">Log in</a></li><br>&lt;% } %&gt;</pre></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">As you can see, we have access to the request object _req_ from the view and therefore we can know things about our user. Here we want to know if he is authenticated. Now you may wonder where this _isAuthenticated_ method comes from. We actually need to attach it to the req object. The best place to do this is in passport&apos;s policy since we apply this policy everywhere (remember it just allows us to initialize authentication stuff for the current request, it doesn&apos;t actually perform any kind of check). We add this function before calling _next()_ in _api/policies/passport.js_ so that it looks like this:</span><br><span class="line">```javascript</span><br><span class="line"></span><br><span class="line">module.exports = function (req, res, next) &#123;</span><br><span class="line">  // Initialize Passport</span><br><span class="line">  passport.initialize()(req, res, function () &#123;</span><br><span class="line">    // Use the built-in sessions</span><br><span class="line">    passport.session()(req, res, function () &#123;</span><br><span class="line">      // Make the user available throughout the frontend</span><br><span class="line">      res.locals.user = req.user;</span><br><span class="line"></span><br><span class="line">      req.isAuthenticated = function() &#123;</span><br><span class="line">        return req.user != null;</span><br><span class="line">      &#125;;</span><br><span class="line"></span><br><span class="line">      next();</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Ok now restart your app, navigate to localhost:1337, log-in<br>Aaannnd it doesn’t work again…</p>
+<p>Before you start throwing virtual stuff at me, just read why it went wrong:<br>If you look at your routes (<em>/config/routes.js</em>), you’ll see that our homepage view is served directly. This means the view is rendered without the request passing through any controller action. But <strong>policies are only applied to action routes!</strong> So we’ll need to create an action to display the home page since we want our passport policy to apply.<br>Using the command line, be sure to be at the root of your project and run<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sails generate controller main index app</span><br></pre></td></tr></table></figure></p>
+<p>This generates a controller called main with two actions index and app. We’ll use index to show the homepage and app to show the actual application page.<br>Open your newly created <em>MainController</em> (under <em>api/controllers/</em>) and replace the index action with the following:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">index: <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> res.view(<span class="string">'homepage'</span>);</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>Then last thing to do is tell sails to call our controller action when a user reaches ‘/‘. To do this, in <em>config/routes.js</em> remove the value assigned to ‘/‘ and add the following instead:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="string">'/'</span>: <span class="string">'MainController.index'</span>,</span><br><span class="line"><span class="string">'/app'</span>: <span class="string">'MainController.app'</span>,</span><br></pre></td></tr></table></figure></p>
+<p>Note that we are also binding another route that will be useful later.</p>
+<p>Now everything should work fine. Try logging-in and out a few times, the navbar updates accordingly.</p>
+<p>All right, now we have our custom styles implemented and a basic layout for the app. We can start focusing on the core of the app. In the next part, we will create models and APIs to interact with data relevant to our app and we’ll implement access control to make this a little more secure.</p>
+<p><a href="http://blog.hmil.fr/2014/12/sailsjs-tutorial-expenses-tracking-app-part-3" target="_blank" rel="noopener"><strong>Read the next part!</strong></a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/" data-id="ck7t2z63s00304nxoo0fc0hpr" class="article-share-link">Share</a>
+      
+        <a href="https://hmil.github.io/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-2/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-archive/sailsjs-tutorial-expenses-tracking-app-part-1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/12/archive/sailsjs-tutorial-expenses-tracking-app-part-1/" class="article-date">
@@ -200,68 +261,11 @@
 
 
   
-    <article id="post-archive/a-cli-tool-to-generate-badges" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/11/archive/a-cli-tool-to-generate-badges/" class="article-date">
-  <time datetime="2014-11-02T10:28:17.000Z" itemprop="datePublished">2014-11-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/archived/">archived</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/11/archive/a-cli-tool-to-generate-badges/">A cli tool to generate badges</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>You may have noticed how CI badges are taking over on github. By CI badge, I mean this kind of things: <img src="https://raw.githubusercontent.com/hmil/node-project-badge/master/images/build-success.png" alt="[build passing]"><br>Build status, code coverage, package version, … There are badge for about everything.</p>
-<p>I wanted these badges for a school project where we had our own jenkins server running somewhere. The thing is, all of these badges come with the associated SaaS (like <a href="http://travis-ci.org" title="travis-ci" target="_blank" rel="noopener">travis</a> or <a href="https://coveralls.io/" title="coveralls" target="_blank" rel="noopener">coveralls</a>). I wanted a CLI tool to generate these on my server from a bash script and I couldn’t find that so I built it.</p>
-<hr>
-<p>The goal was to have one tool able to generate any kind of badge with a unified style and little configuration. There would be shared style settings and different badge <em>kinds</em> which would inherit these settings. Each <em>kind</em> would then take as few configuration as possible to cover all major use cases._ _It also had to be easily extendable so that anyone can add new <em>kinds</em> of badge.</p>
-<p>The solution I came up with was to render on an <a href="https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D" target="_blank" rel="noopener">html5 2D rendering context</a>. It is then possible to render badges in the browser or in node using the exact same code.</p>
-<p>&nbsp;</p>
-<p>From there, I just had to hook up <a href="https://github.com/Automattic/node-canvas" target="_blank" rel="noopener">node-canvas</a> with the existing library, translate CLI arguments to badge settings and that was it. A flexible CLI badge generator. I even added a few built-in configuration files to reduce the number of arguments required to generate popular badges.</p>
-<p>The only problem is that node-canvas uses a native library called <a href="http://cairographics.org/" target="_blank" rel="noopener">cairo</a>. This means you need to install this dependency separately. Also npm needs to build c code when you install the package and it can be a real pain depending on your platform.</p>
-<hr>
-<p>&nbsp;</p>
-<p>Detailed documentation and install instructions are available on github:</p>
-<ul>
-<li>The CLI tool (requires node and cairo): <a href="https://github.com/hmil/node-project-badge" target="_blank" rel="noopener">https://github.com/hmil/node-project-badge</a></li>
-<li>The underling framework: <a href="https://github.com/hmil/project-badge" target="_blank" rel="noopener">https://github.com/hmil/project-badge</a><br>They are both MIT-licensed. If you want to add built-in configs or badge kinds, just submit a pull request. All types of contribution are welcome.</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://hmil.github.io/2014/11/archive/a-cli-tool-to-generate-badges/" data-id="ck7t2z63l002q4nxofnocogln" class="article-share-link">Share</a>
-      
-        <a href="https://hmil.github.io/2014/11/archive/a-cli-tool-to-generate-badges/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/4/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
+    <a class="extend prev" rel="prev" href="/page/4/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -282,7 +286,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/ESP8266/" style="font-size: 15px;">ESP8266</a> <a href="/tags/GitHub/" style="font-size: 10px;">GitHub</a> <a href="/tags/IoT/" style="font-size: 15px;">IoT</a> <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 15px;">architecture</a> <a href="/tags/arduino/" style="font-size: 15px;">arduino</a> <a href="/tags/embedded/" style="font-size: 10px;">embedded</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 15px;">monorepo</a> <a href="/tags/nodeMCU/" style="font-size: 15px;">nodeMCU</a> <a href="/tags/rant/" style="font-size: 10px;">rant</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a> <a href="/tags/wifi/" style="font-size: 15px;">wifi</a>
+      <a href="/tags/Angular/" style="font-size: 10px;">Angular</a> <a href="/tags/ESP8266/" style="font-size: 15px;">ESP8266</a> <a href="/tags/GitHub/" style="font-size: 10px;">GitHub</a> <a href="/tags/IoT/" style="font-size: 15px;">IoT</a> <a href="/tags/JavaScript/" style="font-size: 10px;">JavaScript</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/Svelte/" style="font-size: 10px;">Svelte</a> <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 15px;">architecture</a> <a href="/tags/arduino/" style="font-size: 15px;">arduino</a> <a href="/tags/embedded/" style="font-size: 10px;">embedded</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 15px;">monorepo</a> <a href="/tags/nodeMCU/" style="font-size: 15px;">nodeMCU</a> <a href="/tags/rant/" style="font-size: 10px;">rant</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a> <a href="/tags/wifi/" style="font-size: 15px;">wifi</a>
     </div>
   </div>
 
@@ -291,7 +295,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">September 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
     </div>
   </div>
 
@@ -302,6 +306,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/09/how-ui-frameworks-grab-control/">How to grab control: 4 tactics used by UI libraries</a>
+          </li>
         
           <li>
             <a href="/2020/03/game-of-pong-on-esp8266/">A multiplayer game of pong on the ESP8266</a>
@@ -319,10 +327,6 @@
             <a href="/2018/05/TypeScript-project-structure2/">How to manage and publish a multi-package TypeScript project</a>
           </li>
         
-          <li>
-            <a href="/2018/03/TypeScript-project-structure/">Tips and tricks to structure multi-package TypeScript projects</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -335,7 +339,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2020 Hadrien Milano<br>
+      &copy; 2021 Hadrien Milano<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
