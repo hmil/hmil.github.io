@@ -13,6 +13,8 @@ categories:
 
 This is absolutely not what this chip had been designed to do. But here it is: the WiFi multiplayer game of pong on the [ESP8266](https://code.hmil.fr/2018/07/ultimate-esp8266-guide/).
 
+<!-- more -->
+
 This project turned out to be much more challenging than writing a regular desktop game of pong due to the limitations of the platform. But difficulty is what makes a project fun isn't it?
 
 {% youtube GfEgq1qtt-4 %}

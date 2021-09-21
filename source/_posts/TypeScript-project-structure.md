@@ -11,6 +11,8 @@ categories:
 
 I've been experimenting with ways to structure a complex TypeScript project lately while working on [Vaultage](https://github.com/lbarman/vaultage) and I have finally found a solution that provides proper isolation and consistency across packages.
 
+<!-- more -->
+
 Java developers should be familiar with having dozens of sub-projects open simultaneously in their IDE, each with its own build target and dependencies.
 
 In comparison, JavaScript projects tend to be a mess because of the lack of an idiomatic way to split code across packages. Tools like [lerna](https://github.com/lerna/lerna) help you create a proper JavaScript monorepo and rationalize the development of a complex project. However these tools pack a lot of features which take some time to properly master. The added complexity may result in misunderstanding and in the end the time gained by deploying the tool may be lost in obscure debugging sessions. Additionally, TypeScript is a different beast and requires more work to integrate properly.

@@ -11,6 +11,8 @@ categories:
 
 In the [previous part](/2018/03/TypeScript-project-structure/), we've seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish or deploy the packages. Which is what we will cover in this chapter.
 
+<!-- more -->
+
 ## To follow along
 
 As in the previous part, I have created a simple repository which you can use to follow along this tutorial. This time however, you must first run a script to customize the project before you can start using the repository. The reason is that at the end of this tutorial, you will be able to publish your project to npm. In order to make this work for everyone, we have to rename the packages with a prefix which is unique to each reader of this tutorial. Don't worry, it only takes a second:

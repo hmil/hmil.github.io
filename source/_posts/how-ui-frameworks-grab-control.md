@@ -13,6 +13,8 @@ date: 2021-09-17 20:00:00
 
 In this post we explore tactics used by maintream UI libraries to obtain control.
 
+<!-- more -->
+
 ## What is control?
 
 Take a look at the following code snippet which uses the native browser APIs.

@@ -16,6 +16,8 @@ date: 2018-07-21 17:00:00
 
 The ESP8266 is the [Ford model T](https://en.wikipedia.org/wiki/Ford_Model_T) of the electronics hobbyist: bringing wifi capabilities to the masses at a ridiculously low price. When I first heard about it, it just blew my mind. GPIO + wifi for a couple of bucks?! GET, OUT!
 
+<!-- more -->
+
 After the initial hype, I quickly realized it was going to be more work than I planned to get the setup I wanted. Indeed, the web is flooded with contradictory information on how to use the chip. There are dozens of ways to use the chip and a seemingly infinite range of devices leveraging it. I had to spend a few days researching how to program and run the damn thing!
 
 That's why I wrote this guide: This is my personal take on the ESP8266, what I believe is the *golden path to ESP8266 development*. **I will show you the fastest way to get the most value out of this nifty module, based on my experience and on what worked best for me.**

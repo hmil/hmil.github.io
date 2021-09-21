@@ -12,6 +12,8 @@ tags:
 
 Today we will take a look at a couple ways to improve your TypeScript code. By applying those techniques we will get code that is more readable, contains less bugs and is objectively higher-level without any downside. How cool is that ?
 
+<!-- more -->
+
 ## An example to get started
 
 I like to use examples to illustrate what I'm talking about, so let's start with the following code:

@@ -14,6 +14,8 @@ date: 2015-02-13 17:27:12
 
 **Disclaimer:** This article is a bit old and does not apply to recent versions of the corona sdk. It is put here **for educational purpose**, showing how one may try to break into this kind of applications. **It is not a magic formula for hacking all corona apps across all versions of the sdk.**
 
+<!-- more -->
+
 [![funrun2 hack](/assets/archive/2015/02/2015-02-13-17-38-04.jpg)](/assets/archive/2015/02/2015-02-13-17-38-04.jpg)
 
 If you haven't played funrun yet, you probably will soon. Funrun2 is one of the best multiplayer mobile games out there. It's one of these rare games where you can have all the fun from the very first game you play, but still stays enjoyable after month of playing it. It's my favorite game on mobile and since I had some spare time, I decided to tear it open (yeah, that's what I do to things I like). It was a bit harder than expected and involves some not so trivial hacking as well as a bit of luck. By the way, yes, all these buttons work.

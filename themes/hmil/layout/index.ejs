@@ -1,0 +1,6 @@
+<% page.posts.each(function(post){ %>
+    <%- partial('partials/article', {post: post, index: true}) %>
+    <hr />
+<% }) %>
+
+<a href="/archives">View all posts</a>

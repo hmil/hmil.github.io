@@ -11,6 +11,8 @@ tags:
 
 So you learned a bit of programming and you know how to use git. You are ready to materialize your thoughts through the mighty power of code, and make your art available to the whole world using the most popular open source social network on earth.
 
+<!-- more -->
+
 But you fear that you will make stupid mistakes and ruin your chance to become the next tech influencer. Rest assured, after reading this post you will know everything you need to know to make the most of Octocat's home.
 
 I will give you 10 tips to make it to the top faster than [Pemba Dorje](https://en.wikipedia.org/wiki/Pemba_Dorje) on oxygen!
