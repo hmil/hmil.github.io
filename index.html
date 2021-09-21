@@ -1,558 +1,271 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="google-site-verification" content="XEkaOnI5YgD6GPlLusy7Z7U91v35YU9Q0eX1KslsVoQ" />
-  
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>hmil&#39;s blog</title>
+    
+<link rel="stylesheet" href="/css/style.css">
 
-  
-  <title>hmil&#39;s blog</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="hmil&#39;s blog">
-<meta property="og:url" content="https://hmil.github.io/index.html">
-<meta property="og:site_name" content="hmil&#39;s blog">
-<meta property="og:locale" content="en">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="hmil&#39;s blog">
-  
-    <link rel="alternate" href="/atom.xml" title="hmil&#39;s blog" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-
+<meta name="generator" content="Hexo 5.4.0"></head>
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">hmil&#39;s blog</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">random tech write-ups</a>
-        </h2>
-      
+  <div class="container">
+    <nav class="main-nav">
+    <div class="site-title">hmil</div>
+    <div class="sep"></div>
+    <a href="/">Blog</a>
+    <a target="_blank" rel="noopener" href="https://hmil.fr/">About</a>
+</nav>
+    
+    <article id="post-how-ui-frameworks-grab-control" class="article article-type-post" itemscope
+    itemprop="blogPost">
+    <div class="article-meta">
+        
+        
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
+    <div class="article-inner">
         
-          <a class="main-nav-link" href="/">Home</a>
         
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://hmil.github.io"></form>
-      </div>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main">
-  
-    <article id="post-how-ui-frameworks-grab-control" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2021/09/how-ui-frameworks-grab-control/" class="article-date">
-  <time datetime="2021-09-17T18:00:00.000Z" itemprop="datePublished">2021-09-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/software-engineering/">software engineering</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+            <header class="article-header">
+                
   
     <h1 itemprop="name">
       <a class="article-title" href="/2021/09/how-ui-frameworks-grab-control/">How to grab control: 4 tactics used by UI libraries</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we explore tactics used by maintream UI libraries to obtain control.</p>
-<h2 id="What-is-control"><a href="#What-is-control" class="headerlink" title="What is control?"></a>What is control?</h2><p>Take a look at the following code snippet which uses the native browser APIs.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params">model</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// Create an element</span></span><br><span class="line">    <span class="keyword">const</span> element = <span class="built_in">document</span>.createElement(<span class="string">'div'</span>);</span><br><span class="line">    <span class="built_in">document</span>.body.appendChild(element);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Update the element's style</span></span><br><span class="line">    element.style.setProperty(<span class="string">'background-color'</span>, <span class="string">'blue'</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Add some text</span></span><br><span class="line">    <span class="keyword">const</span> text = <span class="built_in">document</span>.createTextNode(<span class="string">`Welcome to <span class="subst">$&#123;model.city&#125;</span>!`</span>);</span><br><span class="line">    element.appendChild(text);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>The web does not natively provide a way to <em>describe</em> what the UI should look like. The only thing it offers is a set of instructions to modify the document.</p>
-<p><strong>Therefore, if you want something to change on the screen, some code needs to run to make those changes. The browser can’t perform those changes automatically.</strong></p>
-<p>Most modern UI libraries let you express your application in a declarative way. Any code written with such library can be boiled down to this:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// UI code written with a modern library generally boils down to some state and a view.</span></span><br><span class="line"><span class="comment">// The view uses the state.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> state = &#123;</span><br><span class="line">    city: <span class="string">'London'</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> view = &lt;div style=&#123;&#123; backgroundColor: 'blue' &#125;&#125;&gt;</span><br><span class="line">    Welcome to &#123;state.city&#125;!</span><br><span class="line">&lt;/div&gt;;</span><br></pre></td></tr></table></figure>
-<p>The library promises that, whenever you make changes to your state, it will take care of updating the view automatically for you.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Updating the model will "magically" update the view as well</span></span><br><span class="line">state.city = <span class="string">'Budapest'</span>;</span><br></pre></td></tr></table></figure>
-<p>But remember what we said earlier: The DOM cannot change unless some code runs to modify it. Our code above modified the model, but it did not modify the view. Consequently, the view didn’t get updated with the new state!</p>
-<p>If we wanted the view to refresh, we should be doing something like this:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Update the state</span></span><br><span class="line">state.city = <span class="string">'Budapest'</span>;</span><br><span class="line"><span class="comment">// Hand control over to the framework to re-render the view</span></span><br><span class="line">refresh();</span><br></pre></td></tr></table></figure>
-<p>The details of how to implement such <code>refresh</code> method aren’t important for this discussion. Suffices to know that it looks for changes in the state, and then make the corresponding modifications to the document using imperative browser API calls.</p>
-<p><strong>All UI frameworks require some kind of refresh function like this.</strong> There is no way to get away from it, because as we said earlier: some code needs to run to modify the document!</p>
-<p>But having to call a refresh function manually isn’t very practical and breaks the illusion that the model is <em>stuck</em> to the view (we call this illusion <em>data binding</em>). What we want is for this refresh function to somehow be invoked <strong>automatically</strong>.</p>
-<p><em>This</em> is the paradox of control: the user never needs to explicitly hand control over to the framework, and yet some code <em>has</em> to run for the view to refresh!</p>
-<p><strong>If the user is not invoking the refresh function, then who is?</strong></p>
-<h2 id="React-Keeping-it-simple"><a href="#React-Keeping-it-simple" class="headerlink" title="React: Keeping it simple"></a>React: Keeping it simple</h2><p>There are many ways to solve this paradox. The first one we’ll study is perhaps the easiest to understand and it is most famously implemented by React.</p>
-<p>In React, it is still the user’s responsibility to call the refresh function. The catch is that the refresh function is hidden in ordinary calls to React APIs.</p>
-<p>For instance state cannot be defined anywhere, it must be defined in a component’s <code>state</code> property, and you must use <code>setState</code> (or the equivalent hook) to update it.</p>
-<p>When you invoke <code>setState</code>, you incidentally pass <strong>control</strong> over to React, and give it an opportunity to re-render.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Without React:</span></span><br><span class="line">state.city = <span class="string">'Budapest'</span>; <span class="comment">// Set the state</span></span><br><span class="line">refresh(); <span class="comment">// Then refresh</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// With React: Set the state and refresh in a single call</span></span><br><span class="line">setState(&#123; <span class="attr">city</span>: <span class="string">'Budapest'</span>&#125;);</span><br></pre></td></tr></table></figure>
-<p>Of course, React doesn’t immediately re-render the view when you call <code>setState</code>. Instead, it schedules a refresh to be performed on the next frame, such that all modifications happening during this frame can be batched into a single render pass.</p>
-<p>This explains why direct mutations of state are not allowed in React. When you do this, then React has no opportunity to schedule a re-render of the view.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// We don't hand control over to react after this assignment</span></span><br><span class="line"><span class="comment">// so it has no opportunity to re-render the view!</span></span><br><span class="line">state.city = <span class="string">'Paris'</span>;</span><br></pre></td></tr></table></figure>
-<p><em>note: Control is just one of multiple reasons why React doesn’t like mutable state. But the other reasons are beyond the scope of this post.</em></p>
-<h2 id="Angular-Big-Brother-Is-Watching-You"><a href="#Angular-Big-Brother-Is-Watching-You" class="headerlink" title="Angular: Big Brother Is Watching You"></a>Angular: Big Brother Is Watching You</h2><p>As we saw, React politely waits until the developer hands control over to the framework. Meanwhile, Angular is going for a dramatically different route.</p>
-<p>Angular instruments the complete browser runtime to make sure that it <strong>always</strong> acquire control before user code!</p>
-<p>Yes, you read that right. Let me illustrate that with an example, in case your brain is actively blocking the meaning of the above sentence to save your sanity.</p>
-<p>Say we want to know whenever user code runs as a result of a <code>setTimeout</code> timer expiring. We can do this by replacing the global function with ours.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> originalSetTimeout = <span class="built_in">window</span>.setTimeout;</span><br><span class="line"><span class="built_in">window</span>.setTimeout = <span class="function">(<span class="params">cb</span>) =&gt;</span> &#123;</span><br><span class="line">    originalSetTimeout(wrap(cb), ...arguments.slice(<span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">wrap</span>(<span class="params">cb</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'THE USER CODE IS ABOUT TO RUN!'</span>);</span><br><span class="line">        cb(...arguments);</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'THE USER CODE HAS FINISHED RUNNING!'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>The practice of replacing a function like that is called monkey patching or sometimes also swizzling.</p>
-<p>Now if we have user code like this…</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'Going to a different city'</span>);</span><br><span class="line">    state.city = <span class="string">'Berlin'</span>;</span><br><span class="line">&#125;, <span class="number">10000</span>);</span><br></pre></td></tr></table></figure>
-<p>…there is no need to hand control back to Angular after the state modification, because Angular already had control all along!</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">THE USER CODE IS ABOUT TO RUN!</span><br><span class="line">Going to a different city</span><br><span class="line">THE USER CODE HAS FINISHED RUNNING!</span><br></pre></td></tr></table></figure>
-<p>We could use this technique to trigger a new render when the user callback is invoked:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">wrap</span>(<span class="params">cb</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        cb(...arguments);</span><br><span class="line">        <span class="comment">// The user code most likely modified something.</span></span><br><span class="line">        <span class="comment">// So let's schedule a render just in case.</span></span><br><span class="line">        refresh();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Now, this is just for <code>setTimeout</code>. But imagine we did this for <em>every single entry point in the browser API</em>: All event handlers like <code>addEventListener</code>, network apis like <code>fetch</code> and <code>XMLHttpRequest</code>, all message passing, timers, etc… If we covered all of the native APIs, then there would be no way at all for user code to escape our surveillance!</p>
-<p>Well that’s exactly what Angular does. Anytime user code runs, Angular knows about it and it attempts to re-render the view in case any state has changed.</p>
-<blockquote>
-<p>Angular is the Big Brother of the runtime.</p>
-</blockquote>
-<h2 id="Vue-High-tech-black-magic"><a href="#Vue-High-tech-black-magic" class="headerlink" title="Vue: High tech black magic"></a>Vue: High tech black magic</h2><p>Vue’s solution to the control paradox is closer to React than it is to Angular.</p>
-<p>Like React, vue requires that you tell it about the state you are going to use.</p>
-<p>Unlike React, once you have declared your state, vue doesn’t require you to invoke a special function to modify your state.</p>
-<p>In <em>abstract</em> terms, vue code kind of looks like this:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> state = createSomeStateWithVue(&#123;</span><br><span class="line">    city: <span class="string">'London'</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Now I am free to modify my state however I want</span></span><br><span class="line">state.city = <span class="string">'Lausanne'</span>;</span><br></pre></td></tr></table></figure>
-<p>Now if you are anything like me, this should look suspicious. How on earth is vue able to tell when properties on the state are modified? If it’s not instrumenting the runtime like Angular, then it cannot know that code was running. But since no function of the framework is invoked, the framework never obtains control to perform the refresh. So how is it possible that vue still manages to keep the view in sync with the model?!</p>
-<p>The answer is: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy" target="_blank" rel="noopener">Proxies</a>.</p>
-<p>A proxy works by wrapping an object into some sort of magic sensor which can detect whenever the object is read, written to or called.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createSomeStateWithVue</span>(<span class="params">original</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Proxy</span>(original, &#123;</span><br><span class="line">        set(target, prop, value) &#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">`Property <span class="subst">$&#123;prop&#125;</span> was set to <span class="subst">$&#123;value&#125;</span>.`</span>);</span><br><span class="line">            <span class="keyword">const</span> ret =  <span class="built_in">Reflect</span>.set(...arguments);</span><br><span class="line">            refresh();</span><br><span class="line">            <span class="keyword">return</span> ret;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Now, when the user tries to write to any property of the model, the <code>set</code> function is going to be invoked.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Calls the setter and prints "Property city was set to Tallinn"</span></span><br><span class="line">model.city = <span class="string">'Tallinn'</span>;</span><br><span class="line"><span class="comment">// no need to call `refresh()` here because</span></span><br><span class="line"><span class="comment">// it was already called while we were setting the property.</span></span><br></pre></td></tr></table></figure>
-<h2 id="Svelte-A-smarter-way"><a href="#Svelte-A-smarter-way" class="headerlink" title="Svelte: A smarter way"></a>Svelte: A smarter way</h2><p>Last in our list, Svelte comes with yet another completely different solution from all previous frameworks.</p>
-<p>In short, what Vue does at runtime, Svelte does it at compile time.</p>
-<p>Svelte uses a compiler to transform the source code ahead of time, before shipping it to the browser.</p>
-<p>How does this relate to the problem of control? With the compiler, svelte can find out all state mutations and annotate them.</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// This code:</span></span><br><span class="line">model.city = <span class="string">'London'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Gets compiled into:</span></span><br><span class="line">model.city = <span class="string">'London'</span>; refresh();</span><br></pre></td></tr></table></figure>
-<p>It essentially injects the refresh calls for you, where they are needed.</p>
-<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>The paradox of control is one of the many problems UI frameworks and libraries solve, and it wouldn’t make a ton of sense to compare all frameworks side by side based only on this information. Interesting synergies arise when multiple problems get solved together by a framework. </p>
-<p>For instance, React’s love for immutable state is not just about control, but it also plays a central role to optimize rendering of the component tree and offers advantages for code analysis and debugging.<br>Similarly, the primary goal of Svelte’s compiler isn’t to inject the <code>refresh</code> calls. This is just the cherry on top of the actual value brought by the compiler, which is eliminating the need for a runtime library and virtual DOM.</p>
-<p>But in my opinion understanding how a library solves the paradox of control is the key to understanding how it works as a whole. It is the very core of the system, and every other technical decision seems to follow from it as an unavoidable consequence.</p>
-<p>As a gift for sticking by until the end, I’ll leave you with this table which recaps the strategy used by each framework and the strengths and weaknesses inherent of each strategy.</p>
-<table>
-<thead>
-<tr>
-<th>Library</th>
-<th>Strategy</th>
-<th>Pros</th>
-<th>Cons</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>React</td>
-<td>User must call a React entry point</td>
-<td>Simple solution.</td>
-<td>Requires immutability and managed state. Harder for beginners and makes some things more difficult.</td>
-</tr>
-<tr>
-<td>Angular</td>
-<td>Instrument the entire runtime</td>
-<td>Guaranteed to always work. State can be stored anywhere.</td>
-<td>Very heavy solution. The framework needs to keep up with new web APIs.</td>
-</tr>
-<tr>
-<td>Vue</td>
-<td>Proxy the model</td>
-<td>Almost as simple as React, works almost as well as Angular.</td>
-<td>Not quite as simple as React. State needs to be handled in a way the Proxy can understand.</td>
-</tr>
-<tr>
-<td>Svelte</td>
-<td>Compiler instruments code</td>
-<td>Lightweight, should work as well as vue.</td>
-<td>Requires a compile-time step. State needs to be handled in a way the compiler can understand.</td>
-</tr>
-</tbody>
-</table>
-
-      
+                <time datetime="2021-09-17T18:00:00.000Z" itemprop="datePublished">September 17, 2021</time>
+            </header>
+        
+        <div class="article-entry" itemprop="articleBody">
+            
+                <p>In this post we explore tactics used by maintream UI libraries to obtain control.</p>
+                
+            
+        </div>
+        
     </div>
-    <footer class="article-footer">
-      <a data-url="https://hmil.github.io/2021/09/how-ui-frameworks-grab-control/" data-id="cktpxkl4t0000e98mgoak7do3" class="article-share-link">Share</a>
-      
-        <a href="https://hmil.github.io/2021/09/how-ui-frameworks-grab-control/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Angular/">Angular</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JavaScript/">JavaScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/">React</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Svelte/">Svelte</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/">Vue</a></li></ul>
-
-    </footer>
-  </div>
-  
+    
 </article>
 
 
-  
-    <article id="post-game-of-pong-on-esp8266" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/03/game-of-pong-on-esp8266/" class="article-date">
-  <time datetime="2020-03-15T16:30:32.000Z" itemprop="datePublished">2020-03-15</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/IoT/">IoT</a>
-  </div>
+    <hr />
 
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
+    <article id="post-game-of-pong-on-esp8266" class="article article-type-post" itemscope
+    itemprop="blogPost">
+    <div class="article-meta">
         
+        
+    </div>
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
   
     <h1 itemprop="name">
       <a class="article-title" href="/2020/03/game-of-pong-on-esp8266/">A multiplayer game of pong on the ESP8266</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>This is absolutely not what this chip had been designed to do. But here it is: the WiFi multiplayer game of pong on the <a href="https://code.hmil.fr/2018/07/ultimate-esp8266-guide/" target="_blank" rel="noopener">ESP8266</a>.</p>
-<p>This project turned out to be much more challenging than writing a regular desktop game of pong due to the limitations of the platform. But difficulty is what makes a project fun isn’t it?</p>
-<div class="video-container"><iframe src="//www.youtube.com/embed/GfEgq1qtt-4" frameborder="0" allowfullscreen></iframe></div>
-<h2 id="How-it-works"><a href="#How-it-works" class="headerlink" title="How it works"></a>How it works</h2><p>This project uses the <a href="https://github.com/nodemcu/nodemcu-firmware/" target="_blank" rel="noopener">NodeMCU firmware</a>, which lets us write the application using lua scripts, while the heavy lifting is handled by native modules in the firmware.</p>
-<p>We also use <a href="https://github.com/olikraus/u8g2" target="_blank" rel="noopener">U8G2</a> to control a SSD1306-based LED screen of 128x64 pixels. Two push buttons are added for user input.</p>
-<p>The ESP8266 has only one CPU core which must handle both the WiFi stack and the user code. The SDK supporting NodeMCU is event-driven and non preemptive. This means that it maintains an internal queue of event handlers and runs one handler at a time. If there is something urgent in the queue, the SDK can not interrupt the current handler to do that urgent thing; It must wait until the current handler has finished.</p>
-<p>In practice, any invokation of our lua code must complete in under 15 milliseconds, otherwise the WiFi stack might starve and cause the device to crash and reboot.</p>
-<p><img src="/assets/espong/nodemcu-timing.png" alt="Simplified view of time sharing in the NodeMCU framework. The WiFi stack needs to obtain the CPU every 15 milliseconds."></p>
-<h2 id="Differential-rendering"><a href="#Differential-rendering" class="headerlink" title="Differential rendering"></a>Differential rendering</h2><p>One major consequence of the above is that we need to consider the time it takes u8g2 to update the screen.</p>
-<p><img src="/assets/espong/u8g2-timing.png" alt="Timing diagram accounting for the time it takes to send data to the screen"></p>
-<p>The graphic library works with an internal buffer. All drawing operations are made against this buffer. Then, you need to call a function to actually draw this buffer on the screen.</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- Make changes to the internal buffer</span></span><br><span class="line">disp:drawLine(<span class="number">0</span>, <span class="number">0</span>, <span class="number">128</span>, <span class="number">0</span>)</span><br><span class="line">disp:drawLine(<span class="number">0</span>, <span class="number">63</span>, <span class="number">128</span>, <span class="number">63</span>)</span><br><span class="line"><span class="comment">-- Send the buffer to the screen</span></span><br><span class="line">disp:updateDisplay()</span><br></pre></td></tr></table></figure>
-<p>The problem with this approach is that updating the whole screen takes almost the entire time available to run our game loop. There is not enough time left to process inputs, update the state, compute collisions and redraw the objects.</p>
-<p><img src="/assets/espong/u8g2-full.png" alt="The entire frame buffer is sent to the screen"></p>
-<p>Fortunately, full buffer updates aren’t the only way we can update the screen. u8g2 cuts a screen into tiles of 8x8 pixels which we can update individually using <code>updateDisplayArea</code>.</p>
-<p>The first optimization we make is to mark tiles which have changed and only send those tiles instead of the whole screen.<br>However, even with this optimization, there comes times when too much of the screen has changed at once and the rendering still takes too long and crashes.</p>
-<p>The second optimization is to keep track of time while sending the tiles to the screen. When we get too close to the limit, we stop sending new tiles and continue from where we left in the next render cycle.</p>
-<p>Here is the pseudo code for the rendering logic. We keep cycling through the tiles and stop when we have rendered the whole screen, or when there is no time left. Only dirty tiles are effectively rendered.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">i = 0</span><br><span class="line">renderScreen:</span><br><span class="line">  tilesRendered = 0</span><br><span class="line">  while tilesRendered &lt; n_tiles &amp;&amp; get_remaining_time() &gt; 0:</span><br><span class="line">    if is_dirty[i]:</span><br><span class="line">      updateDisplayArea(coordinates_of_tile(i))</span><br><span class="line">      is_dirty[i] = false</span><br><span class="line">    tilesRendered++</span><br><span class="line">    i = (i + 1) % n_tiles</span><br></pre></td></tr></table></figure>
-<p><img src="/assets/espong/u8g2-partial.png" alt="Dirty areas of the screen are marked. There was just enough time left in the first frame to send the green tiles. Red tiles were saved for the next frame."></p>
-<h2 id="Miscellaneous"><a href="#Miscellaneous" class="headerlink" title="Miscellaneous"></a>Miscellaneous</h2><p>There’s plenty more things in the code which I did not discuss here, like how the game logic works in multiplayer as well as various other performance tricks. </p>
-<p>Check out <a href="https://github.com/hmil/espong" target="_blank" rel="noopener">the project on GitHub</a> if you want to dive deeper into the code or if you want to run it yourself.</p>
-<p>Happy hacking!</p>
-
-      
+                <time datetime="2020-03-15T16:30:32.000Z" itemprop="datePublished">March 15, 2020</time>
+            </header>
+        
+        <div class="article-entry" itemprop="articleBody">
+            
+                <p>This is absolutely not what this chip had been designed to do. But here it is: the WiFi multiplayer game of pong on the <a target="_blank" rel="noopener" href="https://code.hmil.fr/2018/07/ultimate-esp8266-guide/">ESP8266</a>.</p>
+                
+            
+        </div>
+        
     </div>
-    <footer class="article-footer">
-      <a data-url="https://hmil.github.io/2020/03/game-of-pong-on-esp8266/" data-id="ck7t2z62m000q4nxo2dgynzpu" class="article-share-link">Share</a>
-      
-        <a href="https://hmil.github.io/2020/03/game-of-pong-on-esp8266/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ESP8266/">ESP8266</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IoT/">IoT</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arduino/">arduino</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodeMCU/">nodeMCU</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wifi/">wifi</a></li></ul>
-
-    </footer>
-  </div>
-  
+    
 </article>
 
 
-  
-    <article id="post-ultimate-esp8266-guide" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/07/ultimate-esp8266-guide/" class="article-date">
-  <time datetime="2018-07-21T15:00:00.000Z" itemprop="datePublished">2018-07-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/IoT/">IoT</a>
-  </div>
+    <hr />
 
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
+    <article id="post-ultimate-esp8266-guide" class="article article-type-post" itemscope
+    itemprop="blogPost">
+    <div class="article-meta">
         
+        
+    </div>
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
   
     <h1 itemprop="name">
       <a class="article-title" href="/2018/07/ultimate-esp8266-guide/">The definitive ESP8266 getting started guide for programmers</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="What-is-the-ESP8266"><a href="#What-is-the-ESP8266" class="headerlink" title="What is the ESP8266?"></a>What is the ESP8266?</h2><p>The ESP8266 is the <a href="https://en.wikipedia.org/wiki/Ford_Model_T" target="_blank" rel="noopener">Ford model T</a> of the electronics hobbyist: bringing wifi capabilities to the masses at a ridiculously low price. When I first heard about it, it just blew my mind. GPIO + wifi for a couple of bucks?! GET, OUT!</p>
-<p>After the initial hype, I quickly realized it was going to be more work than I planned to get the setup I wanted. Indeed, the web is flooded with contradictory information on how to use the chip. There are dozens of ways to use the chip and a seemingly infinite range of devices leveraging it. I had to spend a few days researching how to program and run the damn thing!</p>
-<p>That’s why I wrote this guide: This is my personal take on the ESP8266, what I believe is the <em>golden path to ESP8266 development</em>. <strong>I will show you the fastest way to get the most value out of this nifty module, based on my experience and on what worked best for me.</strong></p>
-<p>If you already know a bit of programming and just want a comfortable and simple environment to write robust IoT applications for cheap, then my friend, you are golden.</p>
-<h2 id="Which-module-should-I-buy"><a href="#Which-module-should-I-buy" class="headerlink" title="Which module should I buy?"></a>Which module should I buy?</h2><p>Let’s start with the hardware. The ESP8266 chip itself is pretty useless to the hobbyist: It has timy SMD terminals, no antenna, very little memory, no USB interface, and requires a few external resistors even just to boot.<br>Therefore, when people talk about the EPS8266, they generally mean <em>a board which harnesses the ESP8266 chip</em>. There is a vast ecosystem of such boards and I will describe a handful of those here, including the one I recommend.</p>
-<h3 id="ESP-XX-modules"><a href="#ESP-XX-modules" class="headerlink" title="ESP-XX modules"></a>ESP-XX modules</h3><p>These are the most basic and widespread modules for the ESP8266. Orignially built by a company called Ai-Thinker, they feature the bare minimum hardware you’ll need.</p>
-<p><img src="/assets/esp8266/ESP07_01_12F.png" alt="Modules of the ESP-XX family by ai-Thinker. From left to right: ESP-07, ESP-01 and ESP-12F"></p>
-<p>The ESP-01 is the oldest module in this familly. It features 4x2 male pins for power, boot modes, GPIO and UART (note that despite using 2.5mm pins, you cannot plug it in a breadboard since this would short pairs of pins together). You’ll find plenty of tutorials about this module on the web, but they apply to its successors as well. Therefore, there is no significant reason to prefer this module over its successors.</p>
-<p>The ESP-12x series is an evolution of the ESP-01, still by the same company. These module fullfill <strong>exactly the same role as the ESP-01</strong>, but they have a dramatically different interface. The dip male pins are supplanted by 2mm solder pads, which means you can’t plug that in your trusty 2.5mm breadboard. They features an onboard antenna, just like the ESP-01, but are also shielded, which presumably enhances their immunity to RF interference. The most popular nowadays is the ESP-12f which boasts some “improved antenna performance”, whatever that means.</p>
-<p>The ESP-07 comes in the same form factor and pinout as the ESP-12f. The major difference we’ll notice as hobbyists is that it doesn’t have an antenna. Instead it features a <em>U.FL socket</em> in which you are supposed to plug an external antenna. This design has a <a href="https://www.youtube.com/watch?v=KYLN9qH0C84" target="_blank" rel="noopener">significantly better range</a> while presumably consuming more power (if someone happens to measure that difference, please let me know the results).</p>
-<p>Both the ESP-12f and ESP-07 require an additional breakout board to convert the 2mm pins to 2.5mm.</p>
-<p>There are more modules in this familly and you can take a look at <a href="https://en.wikipedia.org/wiki/ESP8266#Ai-Thinker_modules" target="_blank" rel="noopener">the list</a> if you are interested. I will not detail how to use them in this article to keep things short. Just know that I advise beginnersagainst using these modules directly. I made the mistake of buying these and lost a few days fixing silly issues that I wouldn’t have faced with a more complete board.</p>
-<h3 id="The-NodeMCU-devkits"><a href="#The-NodeMCU-devkits" class="headerlink" title="The NodeMCU devkits"></a>The NodeMCU devkits</h3><p>The <a href="http://nodemcu.com" target="_blank" rel="noopener">NodeMCU</a> project provides an open source software and hardware solution for working with the ESP8266. Despite being built specifically for the NodeMCU software, the hardware can also be used as a general purpose ESP8266 development kit. We will talk more about the software later.</p>
-<p>The original design incorporates an ESP-12E module, a USB-to-UART converter, 5v to 3.3v voltage regulation, a couple push buttons for reset and flash mode, and exports a micro-usb port and 2 rows of 15 DIP male pins. Needless to say it saves <strong>a lot of effort</strong> working with the chip. Cost-wise it’s between $0.5 and $1 more expensive than a bare ESP-12f. You need <del>all</del> most of the features on the board anyway so don’t try to cut corners and just buy the board already.</p>
-<p><strong>At a price tag of just over 3$, this is the only board you’ll ever need for ESP8266-based projects.</strong></p>
-<p>By virtue of open source hardware, you will find a lot of variations of the design online and will quickly get lost when shopping. While all boards have similar caracteristics, be aware that some models are impractically large and cover all 10 rows of small breadboards. Therefore, I recommend sticking with the one commonly found under the name “v2” (sometimes also “v1”). See the pictures below to know what to look for. You might also want to take a look at <a href="https://frightanic.com/iot/comparison-of-esp8266-nodemcu-development-boards/" target="_blank" rel="noopener">this comparison</a> published by the main contributor to the NodeMCU project.</p>
-<p><img src="/assets/esp8266/NodeMCU_v2_v3.png" alt="Two common NodeMCU boards found on AliExpress: the one on the left is branded as &quot;v2&quot;, and the right &quot;v3&quot;. Notice the pin labels on the v3 are horizontal and take up more space, making the board uncomfortably large."></p>
-<p><em>Note: If you are wondering what NodeMCU has to do with Node.js, well… nothing.</em></p>
-<h2 id="Which-software-can-I-use-to-program-the-ESP8266"><a href="#Which-software-can-I-use-to-program-the-ESP8266" class="headerlink" title="Which software can I use to program the ESP8266?"></a>Which software can I use to program the ESP8266?</h2><p>You should now have a better understanding of the hardware landscape surrounding the ESP8266. Well, that was just the beginning. The software side is even more diverse and confusing than that.<br>I will teach you the basic principles and show a couple of popular solutions. I will then help you run a proof of concept using the solution that I recommend.</p>
-<h3 id="No-software"><a href="#No-software" class="headerlink" title="No software"></a>No software</h3><p>As surprising as it may seem, the ESP8266 is actually first meant to be used as a wifi peripheral, and not to be programmed directly!<br>The default firmware is a simple serial command interpreter, which means that you can do wifi communication just by sending commands from a terminal (or another microcontroller). For instance, this is how you connect to an access point, and make a GET request to <code>http://httpbin.org/ip</code>:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">AT+CIPMUX=0</span><br><span class="line">AT+CWMODE=1</span><br><span class="line">AT+CIPSTART=&quot;TCP&quot;,&quot;httpbin.org&quot;,80</span><br><span class="line">AT+CIPSEND=20</span><br><span class="line">GET /ip HTTP/1.0</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// Notice that the two line returns above are part of the HTTP request and should be in \r\n form</span><br></pre></td></tr></table></figure>
-<p>There is plenty of documentation about this interface on the web; therefore, we are going to keep this section short. In this post we are interested in programming the chip rather than using it as a mere peripheral. Why bother adding a $20 arduino in the setup when the ESP8266 alone can handle everything for under $3?!</p>
-<h3 id="Low-level-C-interfaces"><a href="#Low-level-C-interfaces" class="headerlink" title="Low-level C interfaces"></a>Low-level C interfaces</h3><p>This paragraph is key to understanding the diversity of the software ecosystem for the ESP8266, so pay attention.<br>Espressif systems (the manufacturer of the ESP8266) initially released a software development kit in C that people could use to program the chip. This SDK only had chinese documentation and was rather complex, so for some time the chip remained obscure and unknown of the hacking community. Nowadays, I believe the documentation has been translated to english and the community was able to build powerful frameworks on top of it.</p>
-<p>There are two components to this low level SDK: the “RTOS” version and the “SDK” version. A detailed explaination about the differences is way beyond the scope of this article, but just know that developers must chose one and stick with it. One allows you to program inside a real-time operating system (RTOS), the other one hands over complete control to the programmer. Anyways, these details are not super relevant to us. Just know that the tools you’ll use are based on one of these frameworks.</p>
-<p><strong>It is very unlikely you’ll ever need to use the low-level C libraries. The frameworks built on top of it are much preferred</strong>.</p>
-<h3 id="Arduino"><a href="#Arduino" class="headerlink" title="Arduino"></a>Arduino</h3><p>Of course it’s a thing! Using the C SDK discussed above, a compatibility layer for arduino was developped. It allows one to program applications on the ESP8266 just like on a regular arduino. No matter how attractive this idea is to you, let me warn you: <strong>I do not think it is a good idea to use the Arduino framework to program the ESP8266</strong>.</p>
-<p>The ESP8266 + arduino combo seems very popular (google around and you’ll see). I think this is mainly due to the authority of Arduino and the fact that many in the Arduino community aren’t programmers, rather than the pure technical characteristics of the solution. Gee, some people love arduino so much they’ll even hook one of those to the ESP8266’s UART for applications that could <em>easily</em> fit on the ESP alone!</p>
-<p>The Arduino programming model does not work well with the ESP8266’s architecture.<br>In arduino, you are usually the sole user of the CPU and you do not care much about power consumption. This allows you to write procedural code in a busy loop, which is easy to understand and is what made arduino so successful to beginners.<br>On the ESP8266 on the contrary, you share CPU with the networking stack. Monopolize the CPU for too long and the network stack will crash. What’s more, by virtue of being wireless capable, ESP8266 applications are more likely to run off the grid, where battery life is critical; exit the busyloop model!</p>
-<p>I salute the effort that has been put in making the ESP8266 as compatible as possible with existing arduino APIs but I think that it is the wrong approach to solving the problem. As we will see next, <strong>it is much easier for Arduino enthusiasts to learn a framework tailored for the ESP8266, than it is for the ESP8266 to fit in the Arduino mold.</strong></p>
-<p>I am not saying you can’t use the Arduino stack. You can. But in my opinion you will be more productive and save time going directly for the NodeMCU stack.</p>
-<h3 id="NodeMCU"><a href="#NodeMCU" class="headerlink" title="NodeMCU"></a>NodeMCU</h3><p>This is the way I recommend. NodeMCU is an ambitious idea perfectly put in practice by <a href="https://github.com/nodemcu/nodemcu-firmware/graphs/contributors" target="_blank" rel="noopener">a group of talented programmers</a>. It solves the problems the arduino-based solution faces while providing an extremely user-friendly environment.</p>
-<p>NodeMCU is an open source lua-based operating system for the ESP8266. It contains a lua runtime as well as binary modules to interface with the different hardware capabilities of the EPS8266. <strong>It is the best tradeoff between user-friendliness and resource efficiency I am aware of</strong>. Its programming model is event-based (the API looks very much like that of Node.js), which makes it particularly efficient and suited for this chip. <strong>Despite being based on a scripting language (lua), I found it to run more stable than arduino applications written in C!</strong></p>
-<p>Some people might be put off by having to learn lua. The fact is you do not need to know lua in order to use NodeMCU. You will mostly be copy-pasting snippets from the doc, and add a couple <code>function</code>s and <code>if</code> statements. The language is so easy to read and use that you can do basic modifications without any prior knowlege of it. Of course biggger modifications will require a bit of googling, but the time you spend learning lua is time you would spend working around limitations of the other solutions! Trust me, this is the way to go.</p>
-<h2 id="Let’s-get-hacking"><a href="#Let’s-get-hacking" class="headerlink" title="Let’s get hacking!"></a>Let’s get hacking!</h2><p>Alright, at this point you should be equipped with a NodeMCU board and be convinced that the NodeMCU software is the way to go. If you have a more guerilla hardware setup, make sure you can talk to the board’s uart at the specified baud rate (115200), and that you drive the boot control pins appropriately (see <a href="#Appendix-A-Boot-mode-selection">appendix A</a>).</p>
-<p>NodeMCU development is a two step process: First you load a firmware into the chip, then you write your application. Everything happens through the UART port of the chip.</p>
-<p><strong>As usual, I provide a complete zip archive containing most of the stuff you’ll need for this tutorial, so you can follow along without interruption. <a href="/assets/esp8266/nodemcu-tuto.zip">Grab it with this link</a>.</strong></p>
-<h3 id="Find-your-COM-port"><a href="#Find-your-COM-port" class="headerlink" title="Find your COM port"></a>Find your COM port</h3><p>After you’ve plugged your board to your computer, you will want to find the COM port connected to your ESP8266 chip. One easy way is to go into the arduino IDE, and look at the available options in <em>Tools</em> &gt; <em>Port</em>. Otherwise on OSX, running  <code>ls /dev/cu.*</code> will show the list of potential candidates. Just try each of them until you find the right one. <em>Let me the method you use on other platforms so I can add them here.</em></p>
-<p><img src="/assets/esp8266/com_port_arduino.png" alt="Finding the COM port using the arduino IDE."></p>
-<p>Select one at random, open the serial monitor (the magnifying glass icon on the top right). Make sure you select “115200 baud” and “both NL &amp; CR” in the dropdown at the bottom of the screen. Then depending on what is currently flashed on the board, try either of these two commands: <code>print(node.info())</code> or else just <code>AT</code>. If the first one returns some numbers, then it means that the chip has already been flashed with a NodeMCU firmware (we are still going to replace it with our own). If the second command works, it means that the chip contains the default firmware by espressif (as discussed in the first section).</p>
-<p>If none of them works, try another serial port. It could also be that the chip currently contains garbage and is not able to run anything, or that you booted in “flash mode”. If you are running a bare ESP-XX module, make sure to drive the pins in “boot mode” as shown in <a href="#Appendix-A-Boot-mode-selection">appendix A</a>.</p>
-<p><img src="/assets/esp8266/info_command_arduino.png" alt="Running a command to check that we are talking to an ESP module."></p>
-<p>Now that you know which com port talks to the ESP8266, <strong>close the serial console</strong>, go back to your terminal and save that value to a variable called <code>PORT</code>. For instance, my port is <code>/dev/cu.usbmodem12341</code> so I type:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PORT=&quot;/dev/cu.usbmodem12341&quot;</span><br></pre></td></tr></table></figure>
-<h3 id="Initial-setup"><a href="#Initial-setup" class="headerlink" title="Initial setup"></a>Initial setup</h3><p>There is one major drawback with NodeMCU: The complete image with all existing modules is too big to fit on the chip! Therefore, you need to select which modules you need for a given application and create a custom image with only these modules.<br>Fortunately, there are shortcuts:</p>
-<ul>
-<li>First, <a href="https://nodemcu-build.com/" target="_blank" rel="noopener">a cloud build service</a> lets you generate custom images online. Just check the boxes you need, hit “Start your build” and within a few minutes you’ll get your image sent in your mail.</li>
-<li>Alternatively, you can grab a copy of the firmware containing a collection of the most essential modules curated by yours truely. You can <a href="/assets/esp8266/nodemcu-essentials-2018-07-21-float.bin">download it here</a>.</li>
-</ul>
-<p>For this demo, just use the image I provide (second bullet above).</p>
-<p>We will flash the image using a handy python script named <a href="https://github.com/espressif/esptool" target="_blank" rel="noopener">esptool.py</a>.</p>
-<p><strong>All flashing operations happen in “flash” mode. The commands will hang if the board is in “boot” mode. Refer to <a href="#Appendix-A-Boot-mode-selection">appendix A</a> to learn more about boot modes.</strong></p>
-<p>First, erase the flash memory of the device by running:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python esptool.py --port $PORT erase_flash</span><br></pre></td></tr></table></figure></p>
-<p><strong>Now, reset your ESP8266 in flash mode again</strong>, and proceed to flash the firmware:<br>(Note that at that point the chip will tend to reboot automatically in “bootloader mode”. It might take some patience to get it to reboot in flash mode. I found that I sometimes need to disconnect the chip from the power source, and hold the “flash” button down while I connect it back to power).</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">esptool.py --port $PORT write_flash -fm dio 0x00000 nodemcu-essentials-2018-05-02-float.bin</span><br></pre></td></tr></table></figure>
-<p>Tadaa! You can now reboot your board one more time, in “normal” mode. It is ready to use!</p>
-<h3 id="Application-programming"><a href="#Application-programming" class="headerlink" title="Application programming"></a>Application programming</h3><p>From now on, we will use a program called <a href="https://github.com/kmpm/nodemcu-uploader" target="_blank" rel="noopener">nodemcu-uploader</a> to interact with the chip. Install it or just clone the repository somewhere. Test your setup with <code>nodemcu-uploader --version</code> (note: if you cloned the repo, you might need to <code>python /path/to/nodemcu-uploader.py --version</code> instead).</p>
-<h4 id="Exploring-the-interactive-prompt"><a href="#Exploring-the-interactive-prompt" class="headerlink" title="Exploring the interactive prompt"></a>Exploring the interactive prompt</h4><p>NodeMCU exposes a command prompt on its serial port which you can use to run arbitrary lua code on the chip. <code>nodemcu-uploader</code> actually uses this interface to interact with the chip. Let’s open an interactive terminal with the chip to get a sense of how this works. Make sure you still have the <code>PORT</code> variable around, then run <code>nodemcu-uploader --port $PORT terminal</code>. This should open a terminal connected to your board!</p>
-<p>Try the following command:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(&apos;Hello world&apos;)</span><br></pre></td></tr></table></figure>
-<p>The device should respond by printing the string ‘Hello world’. Awesome! Now how about we do a little bit of wifi?</p>
-<p>Put your chip in <code>station</code> mode with:</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wifi.setmode(wifi.STATION)</span><br></pre></td></tr></table></figure>
-<p>Then enter this to get a list of available wifi networks (it takes a few seconds to load).</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wifi.sta.getap(<span class="number">1</span>, <span class="function"><span class="keyword">function</span> <span class="params">(t)</span></span></span><br><span class="line">  <span class="keyword">for</span> k,v <span class="keyword">in</span> <span class="built_in">pairs</span>(t) <span class="keyword">do</span></span><br><span class="line">    <span class="built_in">print</span>(k..<span class="string">" : "</span>..v)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span>)</span><br></pre></td></tr></table></figure>
-<p>Now configure the chip to connect to your wifi network with the following command:</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wifi.sta.<span class="built_in">config</span>(&#123;ssid = <span class="string">'YOUR_WIFI_NETWORK_NAME'</span>, pwd = <span class="string">'YOUR_WIFI_PASSWORD'</span>&#125;)</span><br></pre></td></tr></table></figure>
-<p>Wait for a dozen seconds to give it time to connect, and then confirm that you are online using the following command:</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span>(wifi.sta.getip())</span><br></pre></td></tr></table></figure>
-<p>If this shows ‘nil’, it means that the NodeMCU did not succesfully connect. Check your wifi password or give it some more time</p>
-<p>Now that our piece of awesomness is connected to the internet, let’s make some HTTP requests!</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">http.get(<span class="string">"https://istheinternetdown.com/"</span>, <span class="literal">nil</span>, <span class="function"><span class="keyword">function</span><span class="params">(code, data)</span></span></span><br><span class="line">  <span class="keyword">if</span> (code &lt; <span class="number">0</span>) <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"HTTP request failed"</span>)</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    <span class="built_in">print</span>(code, data)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span>)</span><br></pre></td></tr></table></figure>
-<p>You should get a response telling you that the internet is not down (hopefully) and return your public IP address.</p>
-<p>You can now quit the interactive session. (Note that this terminal’s retarded exit sequence is “CTRL+]”. If you are using a non-US keyboard use CTRL + <em>whatever key is next to the return key</em>)</p>
-<h4 id="Uploading-a-real-program"><a href="#Uploading-a-real-program" class="headerlink" title="Uploading a real program"></a>Uploading a real program</h4><p>Now that you have a sense of how the NodeMCU terminal interface works, let’s write a real program and upload it to the board.</p>
-<p>First, create a file called <code>env.lua</code>. This file will contain your wifi credentials (this is useful to avoid checking secret credentials in source control).</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- env.lua</span></span><br><span class="line">WIFI_SSID=<span class="string">"YOUR_NETWORK_NAME"</span></span><br><span class="line">WIFI_PASSWORD=<span class="string">"YOUR_NETWORK_PASSWORD"</span></span><br></pre></td></tr></table></figure>
-<p>Then copy the following program into a file called <code>init.lua</code></p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- init.lua</span></span><br><span class="line"><span class="comment">-- Loads the WIFI_NETWORK and WIFI_PASSWORD secret variables</span></span><br><span class="line"><span class="built_in">dofile</span>(<span class="string">'env.lua'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- Connect to the wifi network</span></span><br><span class="line">wifi.setmode(wifi.STATION)</span><br><span class="line">wifi.sta.<span class="built_in">config</span>(&#123;ssid = WIFI_SSID, pwd = WIFI_PASSWORD&#125;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">-- index of the gpio connected to the onboard LED</span></span><br><span class="line">LED_PIN=<span class="number">4</span></span><br><span class="line"></span><br><span class="line">gpio.mode(LED_PIN, gpio.OUTPUT)</span><br><span class="line">gpio.<span class="built_in">write</span>(LED_PIN, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- This will print IP informations upon successful connection</span></span><br><span class="line">wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, <span class="function"><span class="keyword">function</span><span class="params">(T)</span></span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">'\n\tSTA - GOT IP'</span>..<span class="string">'\n\tStation IP: '</span>..T.IP..<span class="string">'\n\tSubnet mask: '</span>..</span><br><span class="line">    T.netmask..<span class="string">'\n\tGateway IP: '</span>..T.gateway)</span><br><span class="line"><span class="keyword">end</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- Create a TCP server</span></span><br><span class="line">sv = net.createServer(net.TCP, <span class="number">30</span>)</span><br><span class="line"></span><br><span class="line">headers = <span class="string">'Content-Type: text/html; charset=UTF-8\r\n'</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- Configure the server to print the data it gets and respond</span></span><br><span class="line"><span class="comment">-- with a greeting message</span></span><br><span class="line"><span class="keyword">if</span> sv <span class="keyword">then</span></span><br><span class="line">  sv:listen(<span class="number">80</span>, <span class="function"><span class="keyword">function</span><span class="params">(conn)</span></span></span><br><span class="line">    conn:on(<span class="string">'receive'</span>, receiver)</span><br><span class="line">  <span class="keyword">end</span>)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">receiver</span><span class="params">(sck, data)</span></span></span><br><span class="line">    <span class="built_in">print</span>(data)</span><br><span class="line">    firstLine = <span class="built_in">string</span>.<span class="built_in">sub</span>(data, <span class="number">0</span>, <span class="built_in">string</span>.<span class="built_in">find</span>(data, <span class="string">'\n'</span>))</span><br><span class="line"></span><br><span class="line">    message = <span class="string">''</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">string</span>.<span class="built_in">match</span>(firstLine, <span class="string">'GET /on '</span>) <span class="keyword">then</span></span><br><span class="line">        message = <span class="string">'&lt;pre&gt;turned on!&lt;/pre&gt;'</span></span><br><span class="line">        gpio.<span class="built_in">write</span>(LED_PIN, <span class="number">0</span>) <span class="comment">-- Note that the led shows the inverse of the logic state of the gpio</span></span><br><span class="line">    <span class="keyword">elseif</span> <span class="built_in">string</span>.<span class="built_in">match</span>(firstLine, <span class="string">'GET /off '</span>) <span class="keyword">then</span></span><br><span class="line">        message = <span class="string">'&lt;pre&gt;turned off!&lt;/pre&gt;'</span></span><br><span class="line">        gpio.<span class="built_in">write</span>(LED_PIN, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">string</span>.<span class="built_in">match</span>(firstLine, <span class="string">'GET /'</span>) <span class="keyword">or</span> message ~= <span class="string">''</span> <span class="keyword">then</span></span><br><span class="line">        sck:send(<span class="string">'HTTP/1.1 200 OK\r\n'</span>.. headers .. <span class="string">'\r\n'</span>..</span><br><span class="line">                <span class="string">'&lt;h1&gt;Hello from ESP8266!&lt;/h1&gt;'</span> ..</span><br><span class="line">                message ..</span><br><span class="line">                <span class="string">'&lt;a href="/on"&gt;Turn light on&lt;/a&gt; - &lt;a href="/off"&gt;Turn light off&lt;/a&gt;'</span>)</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        sck:send(<span class="string">'HTTP/1.1 404 NOT FOUND\r\n'</span>.. headers .. <span class="string">'\r\n'</span>..</span><br><span class="line">                <span class="string">'Not found.&lt;br/&gt;&lt;a href="/"&gt;Go back home&lt;/a&gt;'</span>)  </span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    sck:on(<span class="string">'sent'</span>, <span class="function"><span class="keyword">function</span> <span class="params">()</span></span> sck:<span class="built_in">close</span>() <span class="keyword">end</span>)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
-<p>Finally, upload both files to the board using nodemcu-uploader:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nodemcu-uploader --port $PORT upload env.lua init.lua</span><br></pre></td></tr></table></figure>
-<p>When you reboot your board, it will look for the file called “init.lua” and run that program. It is useful for debugging purposes to connect to the terminal with <code>nodemcu-uploader --port $PORT terminal</code> while your board is booting. This shows a bunch of info as well as any <code>print</code> statement you put in your code.</p>
-<p>Here is what I got:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">--- Miniterm on /dev/cu.usbmodem12341  115200,8,N,1 ---</span><br><span class="line">--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H ---</span><br><span class="line">[some redacted garbage characters. This is a normal behavior of the ESP8266]</span><br><span class="line"></span><br><span class="line">NodeMCU custom build by frightanic.com</span><br><span class="line">	branch: master</span><br><span class="line">	commit: 8181c3be7aed9f0a0ceb73ac8137c1a519e8a8e9</span><br><span class="line">	SSL: true</span><br><span class="line">	modules: cron,enduser_setup,file,gpio,http,i2c,mdns,mqtt,net,node,pwm,rtcfifo,rtcmem,rtctime,sjson,sntp,tmr,uart,wifi,tls</span><br><span class="line"> build created on 2018-07-21 18:02</span><br><span class="line"> powered by Lua 5.1.4 on SDK 2.2.1(cfd48f3)</span><br><span class="line">&gt; </span><br><span class="line">	STA - GOT IP</span><br><span class="line">	Station IP: 192.168.0.22</span><br><span class="line">	Subnet mask: 255.255.255.0</span><br><span class="line">	Gateway IP: 192.168.0.1</span><br></pre></td></tr></table></figure></p>
-<p>Now to test your program, take note of the “Station IP” you get and navigate there with your web browser. In my case for instance, I have to navigate to <code>http://192.168.0.22</code>.</p>
-<div class="video-container"><iframe src="//www.youtube.com/embed/eQv8UEOR8qE" frameborder="0" allowfullscreen></iframe></div>
-<p><em>Excuse messy breadboard. None of it would have been necessary had I simply bought the NodeMCU devkit. Hopefully I made this mistake so you won’t have to.</em></p>
-<p>This test program lets you control the onboard LED through an HTML interface. Note that I tested this with the ESP-07. It should also work with the ESP-12 as well as any ESP-XX based NodeMCU board where the onboard LED is connected to <code>GPIO2</code>. Other hardware may have the LED connected to a different pin or not have an LED at all.</p>
-<h2 id="You-are-on-your-own-now"><a href="#You-are-on-your-own-now" class="headerlink" title="You are on your own now"></a>You are on your own now</h2><p>That’s it for this tutorial. You now know the basics of the ESP8266 and have a complete development setup that allows you to write any IoT application! Let me give you some additional resources and tips before you leave:</p>
-<p>The <a href="https://nodemcu.readthedocs.io/en/master/en/modules/gpio/#gpiomode" target="_blank" rel="noopener">nodemcu documentation</a> is your ultimate resource to learn all of the NodeMCU APIs. It is extremely powerful and I found it to be generally intuitive to use. That being said, keep in mind that when you run an application on the ESP8266, you are pushing it to its limits. Besides the network stack, it has very limited features and processing power. Even basic HTTP stuff is poorly supported. I advise you use <a href="TODO link">MQTT</a> instead, a messaging protocol adapted to IoT applications. <a href="">It is possible to run an HTTP application server on the ESP8266</a> but that is a complete abuse of the chip and should never be attempted in an application you intend to deploy.</p>
-<p>In case you do not want to put all of the pieces together yourself, or if you get stuck somewhere, I provide the “works for me” package: a zip archive containing everything you need to run the experiments shown in this tutorial.</p>
-<p>The archive also contains a Makefile which contains helpful tasks for NodeMCU development.</p>
-<p>I still can not believe the amount of features that come with the ESP8266 as such a low price tag. The NodeMCU stack is like icing on the cake to me as it makes the programming part of such projects a blast! I feel inspired to build lots of IoT stuff and I hope it you do too.<br>I invite you to check out the <a href="https://github.com/hmil/betta-feeder" target="_blank" rel="noopener">fish feeder</a> I built for my betta. Originally piloted by an arduino, I was able to make it more failure tolerant and enhance its logging capabilities by replacing the arduino with an ESP8266!</p>
-<p>And you, what do you want to build with your ESP8266? I’d love to hear your ideas! Feel free to get in touch or share your thoughts in the comment section.</p>
-<hr>
-<h2 id="Appendix"><a href="#Appendix" class="headerlink" title="Appendix"></a>Appendix</h2><h3 id="Appendix-A-Boot-mode-selection"><a href="#Appendix-A-Boot-mode-selection" class="headerlink" title="Appendix A: Boot mode selection"></a>Appendix A: Boot mode selection</h3><p>The following table shows how to select the mode into which the ESP8266 boots. Note that in all cases, GPIO15 must be pulled <strong>down</strong> and GPIO2 must be pulled <strong>high</strong>. Some boards, such as the NodeMCU, take care of this for you. Otherwise, use 10k resistors to drive the pins.</p>
-<table>
-<thead>
-<tr>
-<th>Mode</th>
-<th>NodeMCU devkit</th>
-<th>ESP-XX or others</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>boot</td>
-<td>press <strong>rst</strong></td>
-<td>Pull GPIO0 <strong>up</strong> with a resistor</td>
-</tr>
-<tr>
-<td>flash</td>
-<td>hold <strong>flash</strong> and press <strong>rst</strong></td>
-<td>Bring GPIO0 <strong>down</strong></td>
-</tr>
-</tbody>
-</table>
-
-      
+                <time datetime="2018-07-21T15:00:00.000Z" itemprop="datePublished">July 21, 2018</time>
+            </header>
+        
+        <div class="article-entry" itemprop="articleBody">
+            
+                <h2 id="What-is-the-ESP8266"><a href="#What-is-the-ESP8266" class="headerlink" title="What is the ESP8266?"></a>What is the ESP8266?</h2><p>The ESP8266 is the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Ford_Model_T">Ford model T</a> of the electronics hobbyist: bringing wifi capabilities to the masses at a ridiculously low price. When I first heard about it, it just blew my mind. GPIO + wifi for a couple of bucks?! GET, OUT!</p>
+                
+            
+        </div>
+        
     </div>
-    <footer class="article-footer">
-      <a data-url="https://hmil.github.io/2018/07/ultimate-esp8266-guide/" data-id="ck7t2z638002h4nxoynmjec16" class="article-share-link">Share</a>
-      
-        <a href="https://hmil.github.io/2018/07/ultimate-esp8266-guide/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ESP8266/">ESP8266</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IoT/">IoT</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arduino/">arduino</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/embedded/">embedded</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodeMCU/">nodeMCU</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/wifi/">wifi</a></li></ul>
-
-    </footer>
-  </div>
-  
+    
 </article>
 
 
-  
+    <hr />
 
-
-  <nav id="page-nav">
-    
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
-  </nav>
-
-</section>
+    <article id="post-How-not-to-suck-at-github" class="article article-type-post" itemscope
+    itemprop="blogPost">
+    <div class="article-meta">
         
-          <aside id="sidebar">
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
-    <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/IoT/">IoT</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/archived/">archived</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/hacking/">hacking</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/random/">random</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/software-engineering/">software engineering</a></li></ul>
+        
     </div>
-  </div>
-
-
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
   
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/Angular/" style="font-size: 10px;">Angular</a> <a href="/tags/ESP8266/" style="font-size: 15px;">ESP8266</a> <a href="/tags/GitHub/" style="font-size: 10px;">GitHub</a> <a href="/tags/IoT/" style="font-size: 15px;">IoT</a> <a href="/tags/JavaScript/" style="font-size: 10px;">JavaScript</a> <a href="/tags/React/" style="font-size: 10px;">React</a> <a href="/tags/Svelte/" style="font-size: 10px;">Svelte</a> <a href="/tags/TypeScript/" style="font-size: 20px;">TypeScript</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/android/" style="font-size: 10px;">android</a> <a href="/tags/architecture/" style="font-size: 15px;">architecture</a> <a href="/tags/arduino/" style="font-size: 15px;">arduino</a> <a href="/tags/embedded/" style="font-size: 10px;">embedded</a> <a href="/tags/funrun/" style="font-size: 10px;">funrun</a> <a href="/tags/funrun2/" style="font-size: 10px;">funrun2</a> <a href="/tags/git/" style="font-size: 10px;">git</a> <a href="/tags/github/" style="font-size: 10px;">github</a> <a href="/tags/hack/" style="font-size: 10px;">hack</a> <a href="/tags/monorepo/" style="font-size: 15px;">monorepo</a> <a href="/tags/nodeMCU/" style="font-size: 15px;">nodeMCU</a> <a href="/tags/rant/" style="font-size: 10px;">rant</a> <a href="/tags/reverse-engineering/" style="font-size: 10px;">reverse engineering</a> <a href="/tags/wifi/" style="font-size: 15px;">wifi</a>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/How-not-to-suck-at-github/">How not to suck at GitHub</a>
+    </h1>
+  
+
+                <time datetime="2018-05-28T20:00:00.000Z" itemprop="datePublished">May 28, 2018</time>
+            </header>
+        
+        <div class="article-entry" itemprop="articleBody">
+            
+                <p>So you learned a bit of programming and you know how to use git. You are ready to materialize your thoughts through the mighty power of code, and make your art available to the whole world using the most popular open source social network on earth.</p>
+                
+            
+        </div>
+        
     </div>
-  </div>
-
-  
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">September 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/02/">February 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">November 2014</a></li></ul>
+</article>
+
+
+    <hr />
+
+    <article id="post-TypeScript-project-structure2" class="article article-type-post" itemscope
+    itemprop="blogPost">
+    <div class="article-meta">
+        
+        
     </div>
-  </div>
-
-
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
   
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/05/TypeScript-project-structure2/">How to manage and publish a multi-package TypeScript project</a>
+    </h1>
+  
+
+                <time datetime="2018-05-14T15:00:00.000Z" itemprop="datePublished">May 14, 2018</time>
+            </header>
+        
+        <div class="article-entry" itemprop="articleBody">
+            
+                <p>In the <a href="/2018/03/TypeScript-project-structure/">previous part</a>, we’ve seen a few tricks which can help you split your TypeScript project into small packages. We were still missing a proper build system as well as a way to publish or deploy the packages. Which is what we will cover in this chapter.</p>
+                
+            
+        </div>
+        
+    </div>
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2021/09/how-ui-frameworks-grab-control/">How to grab control: 4 tactics used by UI libraries</a>
-          </li>
-        
-          <li>
-            <a href="/2020/03/game-of-pong-on-esp8266/">A multiplayer game of pong on the ESP8266</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/ultimate-esp8266-guide/">The definitive ESP8266 getting started guide for programmers</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/How-not-to-suck-at-github/">How not to suck at GitHub</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/TypeScript-project-structure2/">How to manage and publish a multi-package TypeScript project</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
+</article>
 
-  
-</aside>
+
+    <hr />
+
+    <article id="post-TypeScript-project-structure" class="article article-type-post" itemscope
+    itemprop="blogPost">
+    <div class="article-meta">
         
-      </div>
-      <footer id="footer">
+        
+    </div>
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
   
-  <div class="outer">
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/03/TypeScript-project-structure/">Tips and tricks to structure multi-package TypeScript projects</a>
+    </h1>
+  
+
+                <time datetime="2018-03-26T15:00:00.000Z" itemprop="datePublished">March 26, 2018</time>
+            </header>
+        
+        <div class="article-entry" itemprop="articleBody">
+            
+                <p>I’ve been experimenting with ways to structure a complex TypeScript project lately while working on <a target="_blank" rel="noopener" href="https://github.com/lbarman/vaultage">Vaultage</a> and I have finally found a solution that provides proper isolation and consistency across packages.</p>
+                
+            
+        </div>
+        
+    </div>
+    
+</article>
+
+
+    <hr />
+
+    <article id="post-archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript" class="article article-type-post" itemscope
+    itemprop="blogPost">
+    <div class="article-meta">
+        
+        
+    </div>
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/archive/deal-with-nullables-like-theyre-not-even-here-good-coding-practices-in-typescript/">Deal with nullables like they&#39;re not even here - Good coding practices in TypeScript.</a>
+    </h1>
+  
+
+                <time datetime="2017-08-01T13:05:10.000Z" itemprop="datePublished">August 1, 2017</time>
+            </header>
+        
+        <div class="article-entry" itemprop="articleBody">
+            
+                <p>Today we will take a look at a couple ways to improve your TypeScript code. By applying those techniques we will get code that is more readable, contains less bugs and is objectively higher-level without any downside. How cool is that ?</p>
+                
+            
+        </div>
+        
+    </div>
+    
+</article>
+
+
+    <hr />
+
+
+<a href="/archives">View all posts</a>
+  </div>
+  <footer id="footer">
+  <div class="container">
     <div id="footer-info" class="inner">
       &copy; 2021 Hadrien Milano<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-<script>
-  var disqus_shortname = 'hmil';
-  
-  (function(){
-    var dsq = document.createElement('script');
-    dsq.type = 'text/javascript';
-    dsq.async = true;
-    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
-    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-  })();
-</script>
-
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-
-
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-<script src="/js/script.js"></script>
-
-
-
-  </div>
 </body>
 </html>
