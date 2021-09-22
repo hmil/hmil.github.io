@@ -6,7 +6,7 @@
     --color-background-1: #e6d3bb;
     --color-background-0: #fff5e8;
 
-    --color-link: #774c18;
+    --color-link: #8a581a;
     --color-link-hover: #a7620f;
 }
 
@@ -102,6 +102,12 @@ hr {
     border: none;
     border-bottom: 1px #888 solid;
     margin: 20px auto;
+}
+
+blockquote {
+    font-style: italic;
+    color: var(--color-text-faded);
+    font-size: 1.08em;
 }
 
 article.article {
