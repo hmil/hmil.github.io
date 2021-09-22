@@ -255,6 +255,12 @@ footer#footer {
     font-size: 0.8em;
 }
 
+#article-nav::after {
+    content: ' ';
+    display: block;
+    clear: both;
+}
+
 .article-nav-caption {
     color: var(--color-text-faded);
 }
@@ -306,4 +312,8 @@ footer#footer {
 }
 #page-nav .extend.next {
     float: right;
+}
+
+#comments {
+    margin-top: 30px;
 }
