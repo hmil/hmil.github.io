@@ -75,11 +75,11 @@
         
             <hr>
             <footer class="article-footer">
-                <a data-url="https://hmil.github.io/2015/11/archive/githubs-merge-pull-request-is-wrong/" data-id="ck7t2z63n002t4nxonifxz9sd" class="article-share-link">
+                <a href="https://code.hmil.fr/2015/11/archive/githubs-merge-pull-request-is-wrong/" data-id="ck7t2z63n002t4nxonifxz9sd" class="article-share-link">
                     Share
                 </a>
                 
-                    <a href="https://hmil.github.io/2015/11/archive/githubs-merge-pull-request-is-wrong/#disqus_thread" class="article-comment-link">
+                    <a href="https://code.hmil.fr/2015/11/archive/githubs-merge-pull-request-is-wrong/#comments" class="article-comment-link">
                         Comments
                     </a>
                 
@@ -129,5 +129,44 @@
     </div>
   </div>
 </footer>
+  
+<script>
+    var disqus_shortname = 'hmil';
+    
+    var disqus_url = 'https://code.hmil.fr/2015/11/archive/githubs-merge-pull-request-is-wrong/';
+    
+    (function(){
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+
+
+
+<script>
+(function() {
+    for (var link of document.getElementsByClassName('article-share-link')) {
+        link.addEventListener('click', function (evt) {
+            evt.preventDefault();
+            const href = link.getAttribute('href');
+            if (!href) return;
+
+            link.removeAttribute('href');
+            const text = link.textContent;
+            link.textContent = 'Link copied to clipboard!';
+
+            navigator.clipboard.writeText(href);
+
+            setTimeout(() => {
+                link.setAttribute('href', href);
+                link.textContent = text;
+            }, 3000);
+        });
+    }
+})();
+</script>
 </body>
 </html>

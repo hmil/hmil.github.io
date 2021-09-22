@@ -40,7 +40,7 @@
         
         <div class="article-entry" itemprop="articleBody">
             
-                <p>This is absolutely not what this chip had been designed to do. But here it is: the WiFi multiplayer game of pong on the <a target="_blank" rel="noopener" href="https://code.hmil.fr/2018/07/ultimate-esp8266-guide/">ESP8266</a>.</p>
+                <p>This is absolutely not what this chip had been designed to do. But here it is: the WiFi multiplayer game of pong on the <a href="https://code.hmil.fr/2018/07/ultimate-esp8266-guide/">ESP8266</a>.</p>
 <span id="more"></span>
 
 <p>This project turned out to be much more challenging than writing a regular desktop game of pong due to the limitations of the platform. But difficulty is what makes a project fun isn’t it?</p>
@@ -74,11 +74,11 @@
         
             <hr>
             <footer class="article-footer">
-                <a data-url="https://hmil.github.io/2020/03/game-of-pong-on-esp8266/" data-id="ck7t2z62m000q4nxo2dgynzpu" class="article-share-link">
+                <a href="https://code.hmil.fr/2020/03/game-of-pong-on-esp8266/" data-id="ck7t2z62m000q4nxo2dgynzpu" class="article-share-link">
                     Share
                 </a>
                 
-                    <a href="https://hmil.github.io/2020/03/game-of-pong-on-esp8266/#disqus_thread" class="article-comment-link">
+                    <a href="https://code.hmil.fr/2020/03/game-of-pong-on-esp8266/#comments" class="article-comment-link">
                         Comments
                     </a>
                 
@@ -128,5 +128,44 @@
     </div>
   </div>
 </footer>
+  
+<script>
+    var disqus_shortname = 'hmil';
+    
+    var disqus_url = 'https://code.hmil.fr/2020/03/game-of-pong-on-esp8266/';
+    
+    (function(){
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+
+
+
+<script>
+(function() {
+    for (var link of document.getElementsByClassName('article-share-link')) {
+        link.addEventListener('click', function (evt) {
+            evt.preventDefault();
+            const href = link.getAttribute('href');
+            if (!href) return;
+
+            link.removeAttribute('href');
+            const text = link.textContent;
+            link.textContent = 'Link copied to clipboard!';
+
+            navigator.clipboard.writeText(href);
+
+            setTimeout(() => {
+                link.setAttribute('href', href);
+                link.textContent = text;
+            }, 3000);
+        });
+    }
+})();
+</script>
 </body>
 </html>
