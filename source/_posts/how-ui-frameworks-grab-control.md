@@ -256,7 +256,7 @@ Similarly, the primary goal of Svelte's compiler isn't to inject the `refresh` c
 
 But in my opinion understanding how a library solves the paradox of control is the key to understanding how it works as a whole. It is the very core of the system, and every other technical decision seems to follow from it as an unavoidable consequence.
 
-As a gift for sticking by until the end, I'll leave you with this table which recaps the strategy used by each framework and the strengths and weaknesses inherent of each strategy.
+As a parting gift, I'll leave you with this recap table:
 
 Library | Strategy | Pros | Cons
 --------|----------|------|------
@@ -264,3 +264,5 @@ React   | User must call a React entry point | Simple solution. | Requires immut
 Angular | Instrument the entire runtime | Guaranteed to always work. State can be stored anywhere. | Very heavy solution. The framework needs to keep up with new web APIs.
 Vue | Proxy the model | Almost as simple as React, works almost as well as Angular. | Not quite as simple as React. State needs to be handled in a way the Proxy can understand.
 Svelte | Compiler instruments code | Lightweight, should work as well as vue. | Requires a compile-time step. State needs to be handled in a way the compiler can understand.
+
+Be sure to check out the [demo repository](https://github.com/hmil/data-binding) which demonstrates each strategy covered in this blog post with a minimalist proof of concept.
