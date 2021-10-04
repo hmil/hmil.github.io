@@ -232,6 +232,10 @@ footer#footer {
     margin-top: 30px;
 }
 
+.footer-links {
+    float: right;
+}
+
 .article-tag-list {
     list-style-type: none;
     padding: 0;
