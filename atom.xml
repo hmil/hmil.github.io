@@ -3,7 +3,7 @@
     <id>https://code.hmil.fr</id>
     <title>hmil&#39;s blog</title>
     <link href="https://code.hmil.fr" />
-    <updated>2021-09-17T18:00:00.000Z</updated>
+    <updated>2021-10-10T18:00:00.000Z</updated>
     <category term="TypeScript" />
     <category term="JavaScript" />
     <category term="funrun" />
@@ -27,6 +27,195 @@
     <category term="Angular" />
     <category term="Vue" />
     <category term="Svelte" />
+    <category term="micro frontends" />
+    <entry>
+        <id>https://code.hmil.fr/2021/10/web-frontend-routing/</id>
+        <title>State of JavaScript routing</title>
+        <link rel="alternate" href="https://code.hmil.fr/2021/10/web-frontend-routing/"/>
+        <content type="html">&lt;p&gt;It’s 2021 and client-side navigation on the web is still an open problem. Let’s recap where we are and where we’re going.&lt;/p&gt;
+&lt;span id=&#34;more&#34;&gt;&lt;/span&gt;
+
+&lt;p&gt;Same-document navigation, client-side navigation or JavaScript navigation all mean the same thing: It is navigation handled by the page’s JavaScript.&lt;/p&gt;
+&lt;p&gt;Same-document navigation is typically perceived as faster and smoother by end users, whereas traditional navigation can feel a bit more rough, although this highly depends on the quality of implementation. The increasing prevalence of same-document navigation coupled with the advances in browser technology means that nowadays it can be difficult for a user to tell the two apart without the use of inspectors.&lt;/p&gt;
+&lt;p&gt;Here is a challenge for you: can you tell, without opening the devtool, which type of navigation this blog and my &lt;a href=&#34;https://hmil.fr/&#34;&gt;main website&lt;/a&gt; are using?&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;You might think that JavaScript navigation is a solved problem by now, but you’d be wrong. Implementations still have to resort to hacks and workarounds to function properly, because the native browser APIs aren’t sufficient to serve the needs of modern applications. In fact, there is ongoing work in web standardization bodies to provide new browser APIs to support these needs.&lt;/p&gt;
+&lt;p&gt;In this post we’ll explore how same-document navigation is implemented today, and how it might be implemented in the future.&lt;/p&gt;
+&lt;h2 id=&#34;Back-to-the-basics-The-URL&#34;&gt;&lt;a href=&#34;#Back-to-the-basics-The-URL&#34; class=&#34;headerlink&#34; title=&#34;Back to the basics: The URL&#34;&gt;&lt;/a&gt;Back to the basics: The URL&lt;/h2&gt;&lt;p&gt;Navigation is all about going &lt;em&gt;somewhere&lt;/em&gt;. On the web, &lt;em&gt;somewhere&lt;/em&gt; means a Unique Resource Locator (URL).&lt;br&gt;So navigating just means changing the URL.&lt;/p&gt;
+&lt;p&gt;If simplified a little bit, the generic structure of an HTTP URL looks like this:&lt;/p&gt;
+&lt;figure class=&#34;highlight plaintext&#34;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&#34;gutter&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#34;code&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;&amp;lt;scheme&amp;gt; :// &amp;lt;host-port-n-stuff&amp;gt; / &amp;lt;path&amp;gt; ? &amp;lt;query&amp;gt; # &amp;lt;fragment&amp;gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;The stuff before the path: scheme, host, port and so on, is not relevant to today’s discussion.&lt;/p&gt;
+&lt;p&gt;We are interested in the &lt;em&gt;path&lt;/em&gt;, &lt;em&gt;query&lt;/em&gt; and &lt;em&gt;fragment&lt;/em&gt;. In fact, let’s group &lt;em&gt;path&lt;/em&gt; and &lt;em&gt;query&lt;/em&gt; together because HTTP treats them identically, so we end up with just two things: &lt;em&gt;path-query&lt;/em&gt; and &lt;em&gt;fragment&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;When navigating to a URL, &lt;em&gt;path-query&lt;/em&gt; is sent to the server to indicate which document the user is interested in.&lt;br&gt;&lt;em&gt;Fragment&lt;/em&gt; is never sent over the network. It is used by the web browser to locate a subsection of the document.&lt;/p&gt;
+&lt;p&gt;Let’s recap with an example from this page:&lt;/p&gt;
+&lt;figure class=&#34;highlight plaintext&#34;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&#34;gutter&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#34;code&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;https://code.hmil.fr/2021/10/web-frontend-routing/#comments&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;https://code.hmil.fr&lt;/code&gt; tells the browser how to reach the website.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/2021/10/web-frontend-routing/&lt;/code&gt; tells the server which page we are looking for.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;#comments&lt;/code&gt; is used by the browser to locate the comment section.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;Routing-strategies&#34;&gt;&lt;a href=&#34;#Routing-strategies&#34; class=&#34;headerlink&#34; title=&#34;Routing strategies&#34;&gt;&lt;/a&gt;Routing strategies&lt;/h2&gt;&lt;p&gt;Considering the discussion above, one might think that routing on the web is a straightforward thing. Since the fragment is client-side only, and the path is sent to the server, the obvious solution woud be:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Change the &lt;em&gt;query&lt;/em&gt; or &lt;em&gt;path&lt;/em&gt; to perform server-side navigation,&lt;/li&gt;
+&lt;li&gt;Change the &lt;em&gt;fragment&lt;/em&gt; to perform client-side navigation.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;But not so fast. For reasons we’ll cover below, this simple scheme wasn’t enough and web developers asked for more…&lt;/p&gt;
+&lt;h3 id=&#34;Fragment-navigation&#34;&gt;&lt;a href=&#34;#Fragment-navigation&#34; class=&#34;headerlink&#34; title=&#34;Fragment navigation&#34;&gt;&lt;/a&gt;Fragment navigation&lt;/h3&gt;&lt;p&gt;Early JavaScript frameworks took advantage of the fragment to implement increasingly complex client-side state changes which ultimately lead to the &lt;em&gt;Single Page Application&lt;/em&gt; (SPA).&lt;/p&gt;
+&lt;p&gt;The advantage offered by this type of navigation was that it was no longer necessary to perform expensive full page navigation, and the JavaScript could retain local state across page loads. In short, this made navigation appear much faster to the user.&lt;/p&gt;
+&lt;p&gt;However, fragment-based navigation wasn’t for everyone.&lt;/p&gt;
+&lt;p&gt;Since the server is unable to see the fragment (remember, the fragment never leaves the browser!), it cannot return the corresponding page. This makes JavaScript a requirement to even see the page, causing a whole host of accessibility issues!&lt;/p&gt;
+&lt;p&gt;Fragment URLs also aren’t indexed by web crawlers, which poses major challenges to get one’s website referenced.&lt;/p&gt;
+&lt;p&gt;Finally, they introduce unnecessary latency to page loads: When a user reloads a page which is “fragment-routed”, first the actual base page has to be loaded from the server - alongside all the JavaScript required to make the page work - then the JS has to run and finally render the desired page.&lt;/p&gt;
+&lt;p&gt;Web developers wanted a way to perform client-side navigation but land on a URL which actually represents a real resource on the server.&lt;/p&gt;
+&lt;h3 id=&#34;Path-navigation-aka-pushState&#34;&gt;&lt;a href=&#34;#Path-navigation-aka-pushState&#34; class=&#34;headerlink&#34; title=&#34;Path navigation (aka. pushState)&#34;&gt;&lt;/a&gt;Path navigation (aka. &lt;code&gt;pushState&lt;/code&gt;)&lt;/h3&gt;&lt;p&gt;The introduction of the &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/History/pushState&#34;&gt;&lt;code&gt;pushState&lt;/code&gt;&lt;/a&gt; API opened the gate to a new kind of navigation: client-side path navigation.&lt;/p&gt;
+&lt;p&gt;It was so counter-intuitive at first that I remember having a massive WTF moment the first time I came across this. Picture this: the server-side part of the URL changes, but no network requests are sent to the server! What kind of sorcery is this?&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;pushState&lt;/code&gt; API is that sorcery. It allows JavaScript to change the document’s &lt;em&gt;path&lt;/em&gt; and &lt;em&gt;query&lt;/em&gt; without causing a navigation. The application JavaScript is then free to implement its own navigation, as with old-school fragment-based navigation.&lt;/p&gt;
+&lt;p&gt;The advantage of this scheme is that any resource can be obtained directly from the server without the help of client-side JavaScript.&lt;br&gt;The disavantage of this scheme is that the server must be able to render any resource without the help of client-side JavaScript.&lt;/p&gt;
+&lt;p&gt;This new capability has been hyped beyond reason by the likes of Google, who advertise end-user benefits such as better accessibility. Conicidentally, crawling the web gets considerably cheaper for Google if they don’t have to spin up complete web browsers and run the JavaScript of each page they visit.&lt;/p&gt;
+&lt;p&gt;Anyways, &lt;code&gt;pushState&lt;/code&gt; navigation is a game changer because it allows “traditional” websites like e-commerce, blogs and social networks to reap the benefits of client-side navigation without compromising on accessibility.&lt;/p&gt;
+&lt;p&gt;But rendering all resources on the server (also called “isomorphic rendering”) can be very difficult in some situations. This difficulty drives many SPA developers to cut corners: ignoring the path and just returning the same &lt;code&gt;index.html&lt;/code&gt; for all requests.&lt;br&gt;If that sounds familiar it’s because this is exactly the same thing which happens when doing fragment navigation, with one major difference: The URL &lt;em&gt;looks like&lt;/em&gt; the resource should be server-side addressable when in reality it &lt;em&gt;requires&lt;/em&gt; JavaScript on the client to render properly.&lt;/p&gt;
+&lt;p&gt;This is the worst of both worlds: Not only do you not get any of the benefits of server-side available resources, but on top of that you need to hack the server such that it serves the default document for resources of which it ignores the very existence.&lt;br&gt;Therefore, I’d argue that, if you are not going to server-side render your resources for whatever reason, then you should stick to fragment navigation.&lt;/p&gt;
+&lt;h2 id=&#34;Implementation&#34;&gt;&lt;a href=&#34;#Implementation&#34; class=&#34;headerlink&#34; title=&#34;Implementation&#34;&gt;&lt;/a&gt;Implementation&lt;/h2&gt;&lt;p&gt;Now that we’ve seen the two main navigation schemes, let’s take a look at their possible implementation.&lt;/p&gt;
+&lt;p&gt;The Web platform offers two interfaces which enable client-side navigation: &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/Location&#34;&gt;Location&lt;/a&gt; and &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/History&#34;&gt;History&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;Location&#34;&gt;&lt;a href=&#34;#Location&#34; class=&#34;headerlink&#34; title=&#34;Location&#34;&gt;&lt;/a&gt;Location&lt;/h3&gt;&lt;p&gt;The Location interface is &lt;a href=&#34;https://html.spec.whatwg.org/multipage/history.html#the-location-interface&#34;&gt;described in the HTML spec&lt;/a&gt; as an “excrescence”. That goes a long way to say this interface is strange and surprising.&lt;/p&gt;
+&lt;p&gt;Despite all its weirdness, the API is deceivingly simple to use.&lt;/p&gt;
+&lt;p&gt;Read it to get the current location:&lt;/p&gt;
+&lt;figure class=&#34;highlight js&#34;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&#34;gutter&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#34;code&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;built_in&#34;&gt;console&lt;/span&gt;.log(&lt;span class=&#34;string&#34;&gt;`The current location is &lt;span class=&#34;subst&#34;&gt;$&amp;#123;&lt;span class=&#34;built_in&#34;&gt;window&lt;/span&gt;.location&amp;#125;&lt;/span&gt;`&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;And write to it to navigate away:&lt;/p&gt;
+&lt;figure class=&#34;highlight js&#34;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&#34;gutter&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#34;code&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;built_in&#34;&gt;window&lt;/span&gt;.location = &lt;span class=&#34;string&#34;&gt;&amp;#x27;http://developer.mozilla.org/&amp;#x27;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;It even has the neat property that, so long as only the fragment and nothing else changes, the current page doesn’t get unloaded.&lt;/p&gt;
+&lt;p&gt;Instead, the &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/HashChangeEvent&#34;&gt;&lt;code&gt;hashchange&lt;/code&gt;&lt;/a&gt; event gets emitted which JavaScript code can subscribe to to perform client-side navigation. &lt;code&gt;hashchange&lt;/code&gt; will also fire when users click on links, the “back” button, and basically any condition which will cause the hash to change.&lt;/p&gt;
+&lt;figure class=&#34;highlight js&#34;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&#34;gutter&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&#34;line&#34;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&#34;line&#34;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&#34;line&#34;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&#34;line&#34;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#34;code&#34;&gt;&lt;pre&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;built_in&#34;&gt;window&lt;/span&gt;.location; &lt;span class=&#34;comment&#34;&gt;// currently: https://code.hmil.fr/2021/10/web-frontend-routing/&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&#34;line&#34;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;comment&#34;&gt;// Only the fragment changes. This won&amp;#x27;t navigate away,&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;comment&#34;&gt;// but instead fire a `hashchange` event.&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;built_in&#34;&gt;window&lt;/span&gt;.location = &lt;span class=&#34;string&#34;&gt;&amp;#x27;https://code.hmil.fr/2021/10/web-frontend-routing/#comments&amp;#x27;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+
+&lt;p&gt;Together, &lt;code&gt;hashchange&lt;/code&gt; and &lt;code&gt;Location&lt;/code&gt; provide a simple way to implement fragment-based client-side navigation.&lt;/p&gt;
+&lt;p&gt;However, path navigation is not feasible. First because &lt;code&gt;hashchange&lt;/code&gt; would not fire on a non-hash change, and second because using the Location interface to change something other than the fragment will cause a full reload of the page.&lt;/p&gt;
+&lt;p&gt;In summary, the Location interface:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;is simple&lt;/li&gt;
+&lt;li&gt;plays nicely with the &lt;code&gt;hashchange&lt;/code&gt; event to implement client-side navigation&lt;/li&gt;
+&lt;li&gt;doesn’t support path-based client-side navigation &lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;History&#34;&gt;&lt;a href=&#34;#History&#34; class=&#34;headerlink&#34; title=&#34;History&#34;&gt;&lt;/a&gt;History&lt;/h3&gt;&lt;p&gt;The &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/History&#34;&gt;History interface&lt;/a&gt; was meant to control the brower’s history. It’s not obvious at first how this is any useful for implementing navigation, and it was not until the addition of &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/History/pushState&#34;&gt;&lt;code&gt;pushState&lt;/code&gt;&lt;/a&gt; that it started to get used for this purpose.&lt;/p&gt;
+&lt;p&gt;What is commonly refered to as &lt;em&gt;the pushState API&lt;/em&gt; is in fact a combination of three things:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;History.pushState - Adds a new “state” on the history&lt;/li&gt;
+&lt;li&gt;History.replaceState - Replaces the current state in the history&lt;/li&gt;
+&lt;li&gt;onpopstate event - Notifies the JavaScript of a state change&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;pushState&lt;/code&gt; and &lt;code&gt;replaceState&lt;/code&gt; work similarly to &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/Location/assign&#34;&gt;&lt;code&gt;Location.assign&lt;/code&gt;&lt;/a&gt; and &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/Location/replace&#34;&gt;&lt;code&gt;Location.replace&lt;/code&gt;&lt;/a&gt;, in that they allow changing the current URL without triggering a navigation.&lt;br&gt;But the similarities end here. The History API can replace non-fragment sections of the URL without unloading the document, which Location cannot, and it can store additional information in the history.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;onpopstate&lt;/code&gt; event is supposed to be analogous to &lt;code&gt;hashchange&lt;/code&gt; except it works for fragment &lt;strong&gt;and&lt;/strong&gt; non-fragment state changes.&lt;/p&gt;
+&lt;p&gt;So the History API is objectively superior to Location, right? It can do both types of navigation and it can store additional context in the history.&lt;/p&gt;
+&lt;p&gt;Well it depends. The History API is far from perfect. It is much more difficult to use than the Location API and it always requires some sort of hack to be used in single page apps.&lt;/p&gt;
+&lt;h3 id=&#34;History’s-weakness-exposed&#34;&gt;&lt;a href=&#34;#History’s-weakness-exposed&#34; class=&#34;headerlink&#34; title=&#34;History’s weakness exposed&#34;&gt;&lt;/a&gt;History’s weakness exposed&lt;/h3&gt;&lt;p&gt;Firstly, unlike the location API, the History API has no way to capture user-initiated navigation. If the user clicks on a link like &lt;code&gt;&amp;lt;a href=&amp;quot;./some/sub/route&amp;quot;&amp;gt;&lt;/code&gt;, the browser will initiate a full document reload, not a same-document navigation!  &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The pushState API doesn’t provide a way to capture user-initiated navigation, so a hack is always required to capture these and prevent full-page navigation from occuring!&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This is why libraries like react-router require you to use a special &lt;code&gt;&amp;lt;Link /&amp;gt;&lt;/code&gt; component rather than using the native &lt;code&gt;&amp;lt;a&amp;gt;&lt;/code&gt; component. An anchor simply won’t work with the router!&lt;br&gt;Others listen to &lt;code&gt;onclick&lt;/code&gt; globally in order to capture clicks on links, but that’s extremely brittle.&lt;/p&gt;
+&lt;p&gt;If that wasn’t enough, there’s also this: &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Calling history.pushState() or history.replaceState() won’t trigger a popstate event. The popstate event is only triggered by performing a browser action, such as clicking on the back button (or calling history.back() in JavaScript), when navigating between two history entries for the same document.&lt;/p&gt;
+&lt;p&gt;&amp;mdash; &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate&#34;&gt;MDN&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Because of this, it is impossible to decouple the read path from the write path. In other words, the piece of software which needs to react to route changes has to collude with the piece of software which wants to initiate such a change.&lt;/p&gt;
+&lt;p&gt;Here is how a few popular libraries cope with this limitation:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;react-router imports a &lt;a href=&#34;https://github.com/remix-run/history&#34;&gt;standalone JavaScript re-implementation&lt;/a&gt; of the history API with a proper listening interface&lt;/li&gt;
+&lt;li&gt;svelte-router &lt;a href=&#34;https://github.com/bluwy/svelte-router/blob/ac441df9b14dfd524092b9176a7abdb0b1eb55a2/src/location-change-shim.ts&#34;&gt;shims the native interfaces&lt;/a&gt; to capture state changes and trigger a listener&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This is manageable when your app is one solid monolith, but as soon as your application gets split into multiple independent pieces, chaos ensues.  &lt;/p&gt;
+&lt;p&gt;It is especially problematic if you are trying to implement a micro-frontend architecture, because now you need some sort of shared global supervisor to handle routing across all microfrontends!  &lt;/p&gt;
+&lt;p&gt;In fact, as of writing this, the guy who &lt;strong&gt;litterally wrote the book on micro frontends&lt;/strong&gt; still &lt;a href=&#34;https://micro-frontends.org/#navigating-between-pages&#34;&gt;hasn’t figured out how to handle routing&lt;/a&gt;, and something tells me the issue we are discussing plays a central role here.&lt;/p&gt;
+&lt;h2 id=&#34;What’s-next&#34;&gt;&lt;a href=&#34;#What’s-next&#34; class=&#34;headerlink&#34; title=&#34;What’s next?&#34;&gt;&lt;/a&gt;What’s next?&lt;/h2&gt;&lt;p&gt;So we’ve seen that the current Web APIs for navigation are quite limiting:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The Location/hashchange combo is robust but it limits you to fragment navigation which is terrible for public facing websites.&lt;/li&gt;
+&lt;li&gt;The History/onpopstate combo does support non-fragment navigation but it has multiple caveats and requires hacks or workarounds.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Here is the same thing in table form if you are more of the visual learner type:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;fragment navigation&lt;/th&gt;
+&lt;th&gt;path navigation&lt;/th&gt;
+&lt;th&gt;Limitations&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;&lt;tr&gt;
+&lt;td&gt;Location API&lt;/td&gt;
+&lt;td&gt;✅&lt;/td&gt;
+&lt;td&gt;❌&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;History API&lt;/td&gt;
+&lt;td&gt;✅&lt;/td&gt;
+&lt;td&gt;✅&lt;/td&gt;
+&lt;td&gt;Doesn’t support listening.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;Wouldn’t it be nice if there was an API which works with path navigation but doesn’t suffer from the limitations of the History interface?&lt;/p&gt;
+&lt;p&gt;Well, there’s some hope. &lt;a href=&#34;https://github.com/WICG/app-history&#34;&gt;A proposal&lt;/a&gt; is being evaluated to create such interface. If it goes through, we’ll finally be able to put the demons of the History API behind us.&lt;/p&gt;
+&lt;h2 id=&#34;What-should-you-do-today&#34;&gt;&lt;a href=&#34;#What-should-you-do-today&#34; class=&#34;headerlink&#34; title=&#34;What should you do today?&#34;&gt;&lt;/a&gt;What should you do today?&lt;/h2&gt;&lt;p&gt;It will be years until the new API makes its way through standardization, implementation and adoption. And while it should put an end to some of the implementation nonsense of pushState navigation, there will always be a place for fragment navigation.&lt;/p&gt;
+&lt;p&gt;Therefore, I would advise you to think twice before chosing a routing scheme.&lt;br&gt;This is one of the most impactful architectural decision you’ll make, as you’ll need to support existing URLs for a long time, and the difference in development cost can be significant between the two schemes.&lt;/p&gt;
+&lt;p&gt;Path navigation can offer a lot of advantages, but don’t downplay its additional cost. Keep your head cool and think objectively about your requirements. There is no one-size-fits-all solution when it comes to JavaScript routing.&lt;/p&gt;
+&lt;p&gt;Here is a quick synthetic table of the pros and cons of each approach:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;Path&lt;/th&gt;
+&lt;th&gt;Fragment&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;&lt;tr&gt;
+&lt;td&gt;cost&lt;/td&gt;
+&lt;td&gt;expensive&lt;/td&gt;
+&lt;td&gt;cheap&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;interoperability (micro-frontends)&lt;/td&gt;
+&lt;td&gt;bad&lt;/td&gt;
+&lt;td&gt;good&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;robustness&lt;/td&gt;
+&lt;td&gt;hacky&lt;/td&gt;
+&lt;td&gt;solid&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;accessibility&lt;/td&gt;
+&lt;td&gt;good&lt;/td&gt;
+&lt;td&gt;limited&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;search engine&lt;/td&gt;
+&lt;td&gt;compatible&lt;/td&gt;
+&lt;td&gt;incompatible&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;We can see that if search engine indexing is not a concern, and the app requires JavaScript anyways, then fragment routing is a pretty good deal! This is going to be the case for enterprise software, or most kind of software one would traditionally imagine running as a standalone desktop app.  &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If you think that you need path URLs, then it means you probably don’t even need client-side routing to begin with.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In all other cases, client-side routing shouldn’t even be a concern to begin with! Such apps or websites should be designed as traditional server-addressable resources architecture, and client-side navigation is just icing on the cake to speed up navigation. In this scenario, obviously path-based navigation is a necessity.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A URL scheme is a &lt;strong&gt;solution&lt;/strong&gt;. Don’t turn it into a &lt;strong&gt;problem&lt;/strong&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;While doing the research for this article, I found many idiotic claims that path URLs are “better” or “sexier” without much justification. Such mindless thinking is bound to lead to poor decisions. Most posts which are actually backed by some form of research adopt a more subtle position, acknowledging that there is a place for fragment navigation.&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;Oh, by the way, I almost forgot:&lt;/p&gt;
+&lt;p&gt;This blog is all just plain old boring native navigation, without any JavaScript. It’s fast because it is lightweight, uses caching, and is served on a good CDN (thanks GitHub!).&lt;/p&gt;
+&lt;p&gt;My &lt;a href=&#34;https://hmil.fr/&#34;&gt;main website&lt;/a&gt; is first built as a static website: each project is its own page and everything “just work” without JavaScript. Then on top of that I added custom &lt;code&gt;pushState&lt;/code&gt;-based routing to play those butter smooth transitions between the main page and project pages.&lt;br&gt;It was quite the challenge to write some robust logic to keep the history tidy in all circumstances (landing on the homepage vs landing on a project page, back button, clicking the &lt;em&gt;close&lt;/em&gt; button on a project page, …) and make sure that the client-side rendered content matched the statically served content. But I think it was worth the trouble and in the end I obtained the experience I wanted.&lt;/p&gt;
+</content>
+        <category term="JavaScript" />
+        <category term="architecture" />
+        <category term="micro frontends" />
+        <updated>2021-10-10T18:00:00.000Z</updated>
+    </entry>
     <entry>
         <id>https://code.hmil.fr/2021/09/how-ui-frameworks-grab-control/</id>
         <title>How to grab control: 4 tactics used by UI libraries</title>
@@ -148,6 +337,7 @@
 &lt;p&gt;Be sure to check out the &lt;a href=&#34;https://github.com/hmil/data-binding&#34;&gt;demo repository&lt;/a&gt; which demonstrates each strategy covered in this blog post with a minimalist proof of concept.&lt;/p&gt;
 </content>
         <category term="JavaScript" />
+        <category term="architecture" />
         <category term="React" />
         <category term="Angular" />
         <category term="Vue" />
