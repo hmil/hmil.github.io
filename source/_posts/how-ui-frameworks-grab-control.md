@@ -6,6 +6,7 @@ tags:
   - Angular
   - Vue
   - Svelte
+  - architecture
 categories:
   - software engineering
 date: 2021-09-17 20:00:00

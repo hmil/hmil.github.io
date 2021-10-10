@@ -29,8 +29,13 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--color-text-headings);
 }
 
+h2 {
+    margin-top: 40px;
+}
+
 p {
-    font-family: 'Georgia', serif;;
+    font-family: 'Georgia', serif;
+    text-align: justify;
 }
 
 a {
@@ -42,9 +47,14 @@ a:hover {
     color: var(--color-link-hover);
 }
 
+li {
+    padding-bottom: 2px;
+}
+
 body {
     font-family: Helvetica, sans-serif;
-    font-size: 1.2em;
+    font-size: 1.3em;
+    line-height: 1.3em;
     color: var(--color-text);
     min-height: 100vh;
     display: flex;
@@ -91,10 +101,18 @@ body {
     color: var(--color-text-headings);
 }
 
-.main-nav a {
+.main-nav > .site-title > a {
+    color: var(--color-text-headings);
+}
+
+.main-nav > a {
     text-decoration: none;
     display: block;
     margin: 0 10px;
+}
+
+.spacer {
+    flex-grow: 1;
 }
 
 hr {
@@ -141,22 +159,23 @@ article.article {
     margin: auto;
 }
 
-.article-entry table {
+.article-entry > table {
     border-collapse: collapse;
     margin-bottom: 10px;
+    min-width: 100%;
 }
 
-.article-entry table td,
-.article-entry table th {
+.article-entry > table td,
+.article-entry > table th {
     padding: 2px 5px;
 }
 
-.article-entry table th:not(:last-child),
-.article-entry table td:not(:last-child) {
+.article-entry > table th:not(:last-child),
+.article-entry > table td:not(:last-child) {
     border-right: 1px #888 solid;
 }
-.article-entry table th,
-.article-entry table tr:not(:last-child) {
+.article-entry > table th,
+.article-entry > table tr:not(:last-child) {
     border-bottom: 1px #888 solid;
 }
 
